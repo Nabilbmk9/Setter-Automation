@@ -1,0 +1,6 @@
+.env
+.idea
+
+# Ignorer les fichiers de bytecode Python
+__pycache__/
+*.pyc
