@@ -17,6 +17,7 @@ class MainController:
 
     def run(self):
         self.scraper.login(self.username, self.password)
+        self.scraper.suspect_verification()
         self.scraper.fetch_unread_messages()
         self.browser_manager.close()
 

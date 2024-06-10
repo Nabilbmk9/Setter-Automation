@@ -8,6 +8,11 @@ class LinkedInScraper:
         self.page.get_by_label("Mot de passe").fill(password)
         self.page.get_by_label("S’identifier", exact=True).click()
 
+    #TODO check if there is suspect verification
+    def suspect_verification(self):
+        if self.page.get_by_placeholder("Saisissez le code"):
+            print("hello")
+
     def fetch_unread_messages(self):
         self.page.get_by_role("link", name="Messagerie").click()
         self.page.get_by_role("radio", name="Non lus").click()
