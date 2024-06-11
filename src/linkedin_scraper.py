@@ -11,10 +11,17 @@ class LinkedInScraper:
         self.page.get_by_label("Mot de passe").fill(password)
         self.page.get_by_label("S’identifier", exact=True).click()
 
-    #TODO check if there is suspect verification
-    def suspect_verification(self):
-        if self.page.get_by_placeholder("Saisissez le code"):
-            print("hello")
+    def check_for_email_verification_pin(self):
+        try:
+            self.page.wait_for_selector('#input__email_verification_pin', timeout=5000)
+            print("Page d'authentification détectée avec ID. En attente du code de vérification.")
+            return True
+        except:
+            return False
+
+    def ensure_authenticated(self):
+        while self.check_for_email_verification_pin():
+            self.page.wait_for_timeout(10000)
 
     def fetch_unread_messages(self):
         self.page.get_by_role("link", name="Messagerie").click()
