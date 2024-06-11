@@ -1,3 +1,6 @@
+from src.utils import remove_emojis
+
+
 class LinkedInScraper:
     def __init__(self, page):
         self.page = page
@@ -17,6 +20,40 @@ class LinkedInScraper:
         self.page.get_by_role("link", name="Messagerie").click()
         self.page.get_by_role("radio", name="Non lus").click()
         self._load_all_messages()
+
+    def get_all_profiles_on_page(self):
+        self.page.wait_for_selector('li.reusable-search__result-container')
+        all_profiles_list = self._fetch_profiles_list()
+        all_profiles_info = [self._extract_profile_info(profile_content) for profile_content in all_profiles_list]
+        print(all_profiles_info)
+        return all_profiles_info
+
+    def _fetch_profiles_list(self):
+        return self.page.query_selector_all('li.reusable-search__result-container')
+
+    def _extract_profile_info(self, profile_content):
+        connect_or_follow = profile_content.query_selector('div.entity-result__actions.entity-result__divider').inner_text()
+        if connect_or_follow not in ["Se connecter", "Suivre"]:
+            return None
+        linkedin_profile_link = profile_content.query_selector('a').get_attribute('href')
+
+        # Modification ici pour le nom complet
+        full_name_element = profile_content.query_selector('span.entity-result__title-text a span[dir="ltr"]')
+        full_name = full_name_element.inner_text().strip()  # Retire les espaces superflus
+        full_name = remove_emojis(full_name)  # Enlève les emojis si nécessaire
+
+        # Extraction du prénom et du nom si possible
+        name_parts = full_name.split()
+        first_name = name_parts[0] if len(name_parts) > 0 else ""
+        last_name = name_parts[1] if len(name_parts) > 1 else ""
+
+        return {
+            "full_name": full_name,
+            "first_name": first_name,
+            "last_name": last_name,
+            "linkedin_profile_link": linkedin_profile_link,
+            "connect_or_follow": connect_or_follow
+        }
 
     def _load_all_messages(self):
         # Attente explicite pour que la page se charge initialement

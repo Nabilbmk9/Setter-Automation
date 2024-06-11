@@ -10,6 +10,7 @@ class MainController:
         self.browser_manager = BrowserManager(headless=False, block_images=False)
         self.username = get_env_variable('LINKEDIN_EMAIL')
         self.password = get_env_variable('LINKEDIN_PASSWORD')
+        self.search_link = get_env_variable('LINKEDIN_SEARCH_LINK')
         self.api_key = get_env_variable('GPT_API_KEY')
         self.scraper = LinkedInScraper(self.browser_manager.new_page())
         self.chat_manager = ChatGPTManager(api_key=self.api_key)
@@ -18,7 +19,9 @@ class MainController:
     def run(self):
         self.scraper.login(self.username, self.password)
         self.scraper.suspect_verification()
-        self.scraper.fetch_unread_messages()
+        self.scraper.page.goto(self.search_link)
+        self.scraper.get_all_profiles_on_page()
+        # self.scraper.fetch_unread_messages()
         self.browser_manager.close()
 
 
