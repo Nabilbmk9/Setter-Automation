@@ -34,10 +34,14 @@ class MainController:
         self.scraper.page.goto(f"{self.search_link}&page={last_page_visited}")
 
         profiles = self.scraper.get_all_profiles_on_page()
-        messages_sent = 0
+        messages_sent = self.data_manager.count_messages_sent_today()
 
         for profile in profiles:
             if profile:
+                if messages_sent >= self.messages_per_day:
+                    logging.info("Limite de messages par jour atteinte, arrêt du bot")
+                    break
+
                 self.scraper.page.goto(profile.get('linkedin_profile_link'))
                 self.scraper.click_connect_or_more_button()
                 self.scraper.enter_custom_message(profile.get('first_name'), self.message_template)
@@ -55,10 +59,6 @@ class MainController:
 
                 messages_sent += 1
                 logging.info(f"{messages_sent}/{self.messages_per_day} messages envoyés")
-
-                if messages_sent >= self.messages_per_day:
-                    logging.info("Limite de messages par jour atteinte, arrêt du bot")
-                    break
 
         self.data_manager.update_last_page_visited(self.search_link, last_page_visited + 1)
         self.browser_manager.close()

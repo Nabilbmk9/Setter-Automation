@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, date
 import logging
 
 
@@ -137,3 +137,14 @@ class DataManager:
         search_id = result[0] if result else None
         logger.info(f"ID de la recherche récupéré pour le lien de recherche {search_link}: {search_id}")
         return search_id
+
+    def count_messages_sent_today(self):
+        cursor = self.conn.cursor()
+        today = date.today().strftime('%Y-%m-%d')
+        cursor.execute('''
+            SELECT COUNT(*) FROM messages WHERE date(date_sent) = ?
+        ''', (today,))
+        result = cursor.fetchone()
+        messages_sent_today = result[0] if result else 0
+        logger.info(f"Nombre de messages envoyés aujourd'hui : {messages_sent_today}")
+        return messages_sent_today
