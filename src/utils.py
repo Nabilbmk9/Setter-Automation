@@ -1,4 +1,12 @@
 import re
+import urllib.parse
+
+
+def extract_keywords_from_search_link(search_link):
+    parsed_url = urllib.parse.urlparse(search_link)
+    query_params = urllib.parse.parse_qs(parsed_url.query)
+    keywords = query_params.get('keywords', [''])[0]
+    return keywords
 
 
 def remove_emojis(data):
