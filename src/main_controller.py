@@ -4,8 +4,10 @@ from browser_manager import BrowserManager
 from linkedin_scraper import LinkedInScraper
 # from chatgpt_manager import ChatGPTManager
 from data_manager import DataManager
-from config import get_env_variable
-from src.utils import extract_keywords_from_search_link
+from src.utils import extract_keywords_from_search_link, get_env_variable
+
+import threading
+from email_checker import run_email_checker
 
 
 class MainController:
@@ -63,6 +65,10 @@ class MainController:
         self.data_manager.update_last_page_visited(self.search_link, last_page_visited + 1)
         self.browser_manager.close()
 
+
+# Démarrer le vérificateur d'emails en arrière-plan
+email_thread = threading.Thread(target=run_email_checker, daemon=True)
+email_thread.start()
 
 if __name__ == '__main__':
     controller = MainController()
