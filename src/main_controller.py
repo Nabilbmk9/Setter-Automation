@@ -7,7 +7,7 @@ from data_manager import DataManager
 from src.utils import extract_keywords_from_search_link, get_env_variable
 
 import threading
-from email_checker import run_email_checker
+from gmail_api import run_email_checker
 
 
 class MainController:

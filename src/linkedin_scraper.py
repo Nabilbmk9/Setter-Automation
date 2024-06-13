@@ -143,7 +143,7 @@ class LinkedInScraper:
             send_button.click()
             logger.info("Invitation envoyée")
             # Ajouter un délai aléatoire entre 1 et 3 secondes après avoir envoyé un message
-            delay = random.randint(6, 12)
+            delay = random.randint(7, 15)
             time.sleep(delay)
         else:
             logger.error("Bouton 'Envoyer une invitation' non trouvé")

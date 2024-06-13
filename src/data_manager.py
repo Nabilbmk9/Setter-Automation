@@ -148,3 +148,32 @@ class DataManager:
         messages_sent_today = result[0] if result else 0
         logger.info(f"Nombre de messages envoyés aujourd'hui : {messages_sent_today}")
         return messages_sent_today
+
+    def check_full_name_exists(self, full_name):
+        cursor = self.conn.cursor()
+        cursor.execute("""
+        SELECT 1 FROM contacts
+        WHERE full_name = ?
+        """, (full_name,))
+        return cursor.fetchone() is not None
+
+    def mark_message_as_responded(self, full_name):
+        cursor = self.conn.cursor()
+        # Récupérer l'ID du contact à partir du nom complet
+        cursor.execute('''
+            SELECT id FROM contacts WHERE full_name = ?
+        ''', (full_name,))
+        contact = cursor.fetchone()
+
+        if contact:
+            contact_id = contact[0]
+            with self.conn:
+                self.conn.execute('''
+                    UPDATE messages
+                    SET response_received = 1
+                    WHERE contact_id = ?
+                ''', (contact_id,))
+                self.conn.commit()
+                logger.info(f"Réponse détectée et enregistrée pour le contact ID : {contact_id} ({full_name})")
+        else:
+            logger.info(f"Aucune correspondance trouvée pour : {full_name}")
