@@ -17,6 +17,14 @@ def extract_keywords_from_search_link(search_link):
     return keywords
 
 
+def get_next_message(message_a, message_b, toggle):
+    """Alterner entre message A et B. Si l'un des messages est vide, utiliser l'autre message."""
+    if message_a and message_b:
+        toggle = not toggle
+        return (message_a if toggle else message_b), toggle
+    return (message_a or message_b), toggle
+
+
 def remove_emojis(data):
     emoji_pattern = re.compile("["
                            u"\U0001F600-\U0001F64F"  # emoticons

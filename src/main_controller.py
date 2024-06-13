@@ -4,7 +4,7 @@ from browser_manager import BrowserManager
 from linkedin_scraper import LinkedInScraper
 # from chatgpt_manager import ChatGPTManager
 from data_manager import DataManager
-from src.utils import extract_keywords_from_search_link, get_env_variable
+from src.utils import extract_keywords_from_search_link, get_env_variable, get_next_message
 
 import threading
 from gmail_api import run_email_checker
@@ -16,12 +16,14 @@ class MainController:
         self.username = get_env_variable('LINKEDIN_EMAIL')
         self.password = get_env_variable('LINKEDIN_PASSWORD')
         self.search_link = get_env_variable('LINKEDIN_SEARCH_LINK')
-        self.message_template = get_env_variable('MESSAGE')
+        self.message_a = get_env_variable('MESSAGE_A')
+        self.message_b = get_env_variable('MESSAGE_B')
         self.api_key = get_env_variable('GPT_API_KEY')
         self.messages_per_day = int(get_env_variable('MESSAGES_PER_DAY', 10))
         self.scraper = LinkedInScraper(self.browser_manager.new_page())
         # self.chat_manager = ChatGPTManager(api_key=self.api_key)
-        self.data_manager = self.data_manager = DataManager(db_path='linkedin_contacts.db')
+        self.data_manager = DataManager(db_path='linkedin_contacts.db')
+        self.message_toggle = False  # Pour alterner entre les messages
 
     def run(self):
         self.scraper.login(self.username, self.password)
@@ -46,7 +48,8 @@ class MainController:
 
                 self.scraper.page.goto(profile.get('linkedin_profile_link'))
                 self.scraper.click_connect_or_more_button()
-                self.scraper.enter_custom_message(profile.get('first_name'), self.message_template)
+                next_message, self.message_toggle = get_next_message(self.message_a, self.message_b, self.message_toggle)
+                self.scraper.enter_custom_message(profile.get('first_name'), next_message)
 
                 # Enregistrement du contact et du message
                 self.data_manager.add_contact(
@@ -57,7 +60,7 @@ class MainController:
                 )
                 contact_id = self.data_manager.get_contact_id(profile.get('linkedin_profile_link'))
                 search_id = self.data_manager.get_search_id(self.search_link)
-                self.data_manager.add_message(self.message_template, contact_id, search_id)
+                self.data_manager.add_message(next_message, contact_id, search_id)
 
                 messages_sent += 1
                 logging.info(f"{messages_sent}/{self.messages_per_day} messages envoyés")
