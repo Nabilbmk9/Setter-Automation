@@ -1,3 +1,5 @@
+import base64
+import re
 import os.path
 import logging
 import time
@@ -50,10 +52,6 @@ def check_for_linkedin_responses(service, data_manager):
         results = service.users().messages().list(userId='me', q='is:unread from:messaging-digest-noreply@linkedin.com').execute()
         messages = results.get('messages', [])
 
-        if not messages:
-            logger.info('No new messages from LinkedIn.')
-            return
-
         for message in messages:
             msg = service.users().messages().get(userId='me', id=message['id']).execute()
 
@@ -65,10 +63,20 @@ def check_for_linkedin_responses(service, data_manager):
                     from_value = header['value']
 
             if from_value:
-                name = extract_name_from_header(from_value)
-                if name:
-                    cleaned_name = remove_emojis(name).strip()
-                    data_manager.mark_message_as_responded(cleaned_name)
+                if "via LinkedIn" in from_value:
+                    name = extract_name_from_header(from_value)
+                    if name:
+                        cleaned_name = remove_emojis(name).strip()
+                        data_manager.mark_message_as_responded(cleaned_name)
+                elif "Messagerie LinkedIn" in from_value:
+                    # Lire le contenu de l'email
+                    for part in msg.get('payload', {}).get('parts', []):
+                        if part['mimeType'] == 'text/plain':
+                            message_text = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8')
+                            names = extract_names_from_email_content(message_text)
+                            for name in names:
+                                cleaned_name = remove_emojis(name).strip()
+                                data_manager.mark_message_as_responded(cleaned_name)
 
             # Marquer le message comme lu
             service.users().messages().modify(
@@ -91,10 +99,17 @@ def extract_name_from_header(from_header):
     return None
 
 
+def extract_names_from_email_content(content):
+    """Extrait les noms du contenu de l'email."""
+    names = re.findall(r'^([A-Z][a-zA-Z\s\-\’\'\.]+) \(', content, re.MULTILINE)
+    return names
+
+
 def run_email_checker():
     """Exécute le vérificateur d'emails."""
     data_manager = DataManager(db_path='linkedin_contacts.db')
     service = get_gmail_service()
     while True:
         check_for_linkedin_responses(service, data_manager)
+        logger.info('No new message, waiting for 5 minutes before retrying.')
         time.sleep(300)  # Vérifie les emails toutes les 5 minutes
