@@ -64,6 +64,14 @@ class LinkedInScraper:
         except Exception as e:
             logger.error(f"Erreur lors de la sélection du textarea : {e}")
 
+    def is_next_button_disabled(self):
+        try:
+            next_button = self.page.query_selector('button.artdeco-pagination__button--next')
+            return next_button and 'artdeco-button--disabled' in next_button.get_attribute('class')
+        except Exception as e:
+            logger.error(f"Erreur lors de la vérification du bouton suivant : {e}")
+            return False
+
     def scrape_profile_details(self):
         """Scrape the profile details for additional information."""
         try:
