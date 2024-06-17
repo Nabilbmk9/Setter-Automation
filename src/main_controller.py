@@ -47,6 +47,8 @@ class MainController:
                     break
 
                 self.scraper.page.goto(profile.get('linkedin_profile_link'))
+                profile_details = self.scraper.scrape_profile_details()
+                profile.update(profile_details)  # Ajouter les détails au profil
                 self.scraper.click_connect_or_more_button()
                 next_message, self.message_toggle = get_next_message(self.message_a, self.message_b, self.message_toggle)
                 self.scraper.enter_custom_message(profile.get('first_name'), next_message)

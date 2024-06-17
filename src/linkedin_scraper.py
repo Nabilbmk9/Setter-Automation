@@ -64,7 +64,103 @@ class LinkedInScraper:
         except Exception as e:
             logger.error(f"Erreur lors de la sélection du textarea : {e}")
 
+    def scrape_profile_details(self):
+        """Scrape the profile details for additional information."""
+        try:
+            # Attendre que la page soit complètement chargée
+            self.page.wait_for_load_state('load')
+
+            profile_details = {
+                "title": self._scrape_title(),
+                "info": self._scrape_info(),
+                # "experience": self._scrape_experience()
+            }
+            return profile_details
+
+        except Exception as e:
+            logger.error(f"Erreur lors de l'extraction des détails du profil : {e}")
+            return {}
+
     # Méthodes privées
+
+    def _scrape_title(self):
+        """Scrape the title from the profile page."""
+        try:
+            title_element = self.page.query_selector('.text-body-medium')
+            return title_element.inner_text().strip() if title_element else "Non spécifié"
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération du titre : {e}")
+            return "Non spécifié"
+
+    def _scrape_info(self):
+        """Scrape the information section from the profile page."""
+        try:
+            # Cibler le conteneur principal de la section "Infos"
+            info_container = self.page.query_selector(
+                '.pv-profile-card.break-words .display-flex.ph5.pv3 .inline-show-more-text--is-collapsed')
+
+            # Extraire le texte de la section "Infos"
+            if info_container:
+                info_text = info_container.query_selector('span[aria-hidden="true"]').inner_text().strip()
+                return info_text
+            else:
+                logger.info("Aucune section 'Infos' trouvée")
+                return "Non spécifié"
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération de la partie information : {e}")
+            return "Non spécifié"
+
+    #TODO revoir toute la fonction
+    def _scrape_experience(self):
+        try:
+            experience_sections = self.page.query_selector_all('section:has(div#experience) ul li')
+            experiences = []
+
+            for item in experience_sections[:2]:  # Limité aux 2 premières expériences
+                experience = {
+                    'title': self._extract_experience_title(item),
+                    # 'company': self._extract_experience_company(item),
+                    # 'period': self._extract_experience_period(item),
+                    # 'location': self._extract_experience_location(item),
+                    # 'details': self._extract_experience_details(item),
+                    # 'sub_experiences': self._extract_sub_experiences(item)
+                }
+                experiences.append(experience)
+
+            return experiences if experiences else "Non spécifié"
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération des expériences : {e}")
+            return "Non spécifié"
+
+    def _extract_experience_title(self, item):
+        try:
+            t_bold_element = item.query_selector('.t-bold')
+            if t_bold_element:
+                visually_hidden_element = t_bold_element.query_selector('.visually-hidden')
+
+                if visually_hidden_element:
+                    return visually_hidden_element.inner_text().strip()
+
+            return "Non spécifié"
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération du titre : {e}")
+            return "Non spécifié"
+
+    def _extract_experience_company(self, item):
+        pass
+
+    def _extract_experience_period(self, item):
+        pass
+
+    def _extract_experience_location(self, item):
+        pass
+
+    def _extract_experience_details(self, item):
+        pass
+
+    def _extract_sub_experiences(self, item):
+        pass
+
     def _check_for_email_verification_pin(self):
         try:
             self.page.wait_for_selector('#input__email_verification_pin', timeout=5000)
