@@ -243,3 +243,7 @@ class DataManager:
             logger.info(f"Réponse détectée et enregistrée pour le contact ID : {contact_id} ({full_name})")
         else:
             logger.info(f"Aucune correspondance trouvée pour : {full_name}")
+
+    def has_reached_message_limit(self, messages_per_day):
+        messages_sent = self.count_messages_sent_today()
+        return messages_sent >= messages_per_day, messages_sent

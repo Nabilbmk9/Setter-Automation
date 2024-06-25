@@ -32,4 +32,20 @@ def get_stylesheet():
         QPushButton:hover {
             background-color: #ff5714;
         }
+        QMessageBox {
+            background-color: #243672;
+            color: white;
+        }
+        QMessageBox QLabel {
+            color: white;
+        }
+        QMessageBox QPushButton {
+            background-color: #ff4500;
+            color: white;
+            border-radius: 10px;
+            padding: 5px;
+        }
+        QMessageBox QPushButton:hover {
+            background-color: #ff5714;
+        }
     """

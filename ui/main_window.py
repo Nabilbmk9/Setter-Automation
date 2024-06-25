@@ -7,7 +7,6 @@ from ui.styles import get_stylesheet
 
 import os
 
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -124,6 +123,12 @@ class MainWindow(QMainWindow):
             message_b=message_b,
             messages_per_day=int(messages_per_day)
         )
+
+        # Vérifiez si la limite de messages est atteinte
+        limit_reached, messages_sent = self.controller.data_manager.has_reached_message_limit(self.controller.messages_per_day)
+        if limit_reached:
+            QMessageBox.warning(self, "Limite atteinte", f"Vous avez déjà atteint la limite de messages pour aujourd'hui. ({messages_sent}/{self.controller.messages_per_day})")
+            return
 
         self.controller.run()
         QMessageBox.information(self, "Bot Started", "The bot has been started.")
