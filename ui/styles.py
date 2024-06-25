@@ -48,4 +48,19 @@ def get_stylesheet():
         QMessageBox QPushButton:hover {
             background-color: #ff5714;
         }
+        QDialog {
+            background-color: #243672;
+        }
+        QDialog QLabel {
+            color: white;
+        }
+        QDialog QPushButton {
+            background-color: #ff4500;
+            color: white;
+            border-radius: 10px;
+            padding: 5px;
+        }
+        QDialog QPushButton:hover {
+            background-color: #ff5714;
+        }
     """
