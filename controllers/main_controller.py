@@ -4,7 +4,6 @@ from services.linkedin_scraper import LinkedInScraper
 from services.data_manager import DataManager
 from utils.utils import extract_keywords_from_search_link, get_next_message
 import threading
-from services.gmail_api import run_email_checker
 
 class MainController:
     def __init__(self, username, password, search_link, message_a, message_b, messages_per_day):
@@ -23,9 +22,6 @@ class MainController:
         try:
             self.browser_manager = BrowserManager(headless=False, block_images=False)
             self.scraper = LinkedInScraper(self.browser_manager.new_page())
-
-            email_thread = threading.Thread(target=run_email_checker, daemon=True)
-            email_thread.start()
 
             self.scraper.login(self.username, self.password)
             self.scraper.ensure_authenticated()
