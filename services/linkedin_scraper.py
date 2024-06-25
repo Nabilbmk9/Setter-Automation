@@ -2,7 +2,7 @@ import logging
 import random
 import time
 
-from src.utils import remove_emojis
+from utils.utils import remove_emojis
 
 # Configurer le logger
 logging.basicConfig(level=logging.INFO)

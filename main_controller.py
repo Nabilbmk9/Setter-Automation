@@ -2,7 +2,7 @@ import logging
 from browser_manager import BrowserManager
 from linkedin_scraper import LinkedInScraper
 from data_manager import DataManager
-from src.utils import extract_keywords_from_search_link, get_env_variable, get_next_message
+from src.utils import extract_keywords_from_search_link, get_next_message
 import threading
 from gmail_api import run_email_checker
 
@@ -18,7 +18,7 @@ class MainController:
         self.api_key = api_key
         self.messages_per_day = messages_per_day
         self.scraper = None
-        self.data_manager = DataManager(db_path='linkedin_contacts.db')
+        self.data_manager = DataManager(db_path='services/linkedin_contacts.db')
         self.message_toggle = False  # Pour alterner entre les messages
 
     def run(self):

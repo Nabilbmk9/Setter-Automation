@@ -9,8 +9,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from src.data_manager import DataManager
-from src.utils import remove_emojis
+from services.data_manager import DataManager
+from utils.utils import (remove_emojis)
 
 # Configurer le logger
 logging.basicConfig(level=logging.INFO)

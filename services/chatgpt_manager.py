@@ -14,19 +14,7 @@ class ChatGPTManager:
 
     def generate_custom_message(self, profile_info):
         prompt = (
-            f"Tu es un assistant de rédaction spécialisé dans les messages LinkedIn. "
-            f"Ta tâche est de rédiger un message court et personnalisé (max 299 caractères) pour contacter un développeur en reconversion professionnelle. "
-            f"Voici les informations du profil :\n\n"
-            f"Nom complet : {profile_info['full_name']}\n"
-            f"Prénom : {profile_info['first_name']}\n"
-            f"Nom : {profile_info['last_name']}\n"
-            f"Expérience professionnelle : {profile_info.get('experience', 'Non spécifié')}\n"
-            f"Compétences : {profile_info.get('skills', 'Non spécifié')}\n\n"
-            f"Voici un exemple de message actuel qui fonctionne bien :\n\n"
-            f"\"Salut {{first_name}}, je te contacte parce que moi aussi j'ai fait une reconversion professionnelle. "
-            f"Aujourd'hui, je suis développeur freelance. Je sais que ça peut être difficile de se démarquer au début pour trouver son premier CDI ou sa première mission freelance. "
-            f"Est-ce que c'est ton cas ?\"\n\n"
-            f"En utilisant les informations fournies et en t'inspirant du message actuel, écris un message personnalisé pour ce profil :"
+
         )
 
         try:
