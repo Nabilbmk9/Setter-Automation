@@ -3,6 +3,7 @@ from playwright.sync_api import sync_playwright
 import os
 import sys
 
+
 class BrowserManager:
     def __init__(self, headless=False, block_images=False):
         self.playwright = sync_playwright().start()

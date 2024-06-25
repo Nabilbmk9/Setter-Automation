@@ -7,14 +7,13 @@ import threading
 from services.gmail_api import run_email_checker
 
 class MainController:
-    def __init__(self, username, password, search_link, message_a, message_b, api_key, messages_per_day):
+    def __init__(self, username, password, search_link, message_a, message_b, messages_per_day):
         self.browser_manager = None
         self.username = username
         self.password = password
         self.search_link = search_link
         self.message_a = message_a
         self.message_b = message_b
-        self.api_key = api_key
         self.messages_per_day = messages_per_day
         self.scraper = None
         self.data_manager = DataManager(db_path='linkedin_contacts.db')

@@ -24,17 +24,17 @@ def get_gmail_service():
     """Connecte à l'API Gmail et retourne le service."""
     creds = None
     # Le fichier token.json stocke les jetons d'accès et de mise à jour de l'utilisateur
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists('credentials/token.json'):
+        creds = Credentials.from_authorized_user_file('credentials/token.json', SCOPES)
     # Si aucun jeton n'est disponible, laissez l'utilisateur se connecter.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file('credentials/credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Enregistrez les jetons pour la prochaine exécution
-        with open('token.json', 'w') as token:
+        with open('credentials/token.json', 'w') as token:
             token.write(creds.to_json())
 
     try:
