@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(10)
 
-        self.title_label = QLabel("Titre de l'Application")
+        self.title_label = QLabel("Bot LinkedIn")
         self.title_label.setAlignment(Qt.AlignCenter)
         self.title_label.setObjectName("title")
         self.title_label.setFont(montserrat)
