@@ -1,33 +1,26 @@
+import logging
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFontDatabase, QFont
 from controllers.main_controller import MainController
 from config.config import load_config, update_config
 from ui.styles import get_stylesheet
-
 import os
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Bot Application")
-        self.resize(400, 600)  # Changer la taille de la fenêtre (largeur, hauteur)
+        self.resize(400, 600)
 
         # Charger la configuration
         self.config = load_config()
 
-        # Débogage du chemin du fichier de police
         font_path = os.path.abspath('ui/fonts/Montserrat-Regular.ttf')
-
-        # Charger les polices Montserrat
         font_id = QFontDatabase.addApplicationFont(font_path)
         loaded_fonts = QFontDatabase.applicationFontFamilies(font_id)
 
-        # Définir la police Montserrat pour les widgets
         montserrat = QFont("Montserrat", 10)
-
-        # Appliquer le style
         self.setStyleSheet(get_stylesheet())
 
         layout = QVBoxLayout()
@@ -39,7 +32,7 @@ class MainWindow(QMainWindow):
         self.title_label.setObjectName("title")
         self.title_label.setFont(montserrat)
         layout.addWidget(self.title_label)
-        layout.addSpacing(30)  # Ajouter plus d'espace sous le titre
+        layout.addSpacing(30)
 
         self.username_label = QLabel("Email LinkedIn:")
         self.username_label.setFont(montserrat)
@@ -51,7 +44,7 @@ class MainWindow(QMainWindow):
         self.password_label = QLabel("Mot de passe LinkedIn:")
         self.password_label.setFont(montserrat)
         self.password_input = QLineEdit(self.config.get('LINKEDIN_PASSWORD', ''))
-        self.password_input.setEchoMode(QLineEdit.Password)  # Masquer le texte du mot de passe
+        self.password_input.setEchoMode(QLineEdit.Password)
         self.password_input.setFont(montserrat)
         layout.addWidget(self.password_label)
         layout.addWidget(self.password_input)
@@ -94,6 +87,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def start_bot(self):
+        logging.debug("Start Bot button clicked")
         username = self.username_input.text()
         password = self.password_input.text()
         search_link = self.search_link_input.text()
@@ -103,33 +97,37 @@ class MainWindow(QMainWindow):
 
         if not all([username, password, search_link, message_a, message_b, messages_per_day]):
             QMessageBox.warning(self, "Input Error", "All fields must be filled!")
+            logging.error("Input Error: All fields must be filled!")
             return
 
-        # Sauvegarder les nouvelles valeurs dans le fichier .env
-        self.config.update({
-            'LINKEDIN_EMAIL': username,
-            'LINKEDIN_PASSWORD': password,
-            'LINKEDIN_SEARCH_LINK': search_link,
-            'MESSAGE_A': message_a,
-            'MESSAGE_B': message_b,
-            'MESSAGES_PER_DAY': messages_per_day
-        })
-        update_config(self.config)
+        # Sauvegarder les nouvelles valeurs dans le fichier JSON
+        try:
+            logging.debug("Updating configuration with new values")
+            self.config.update({
+                'LINKEDIN_EMAIL': username,
+                'LINKEDIN_PASSWORD': password,
+                'LINKEDIN_SEARCH_LINK': search_link,
+                'MESSAGE_A': message_a,
+                'MESSAGE_B': message_b,
+                'MESSAGES_PER_DAY': messages_per_day
+            })
+            update_config(self.config)
+            logging.debug("Configuration updated successfully")
 
-        self.controller = MainController(
-            username=username,
-            password=password,
-            search_link=search_link,
-            message_a=message_a,
-            message_b=message_b,
-            messages_per_day=int(messages_per_day)
-        )
-
-        # Vérifiez si la limite de messages est atteinte
-        limit_reached, messages_sent = self.controller.data_manager.has_reached_message_limit(self.controller.messages_per_day)
-        if limit_reached:
-            QMessageBox.warning(self, "Limite atteinte", f"Vous avez déjà atteint la limite de messages pour aujourd'hui. ({messages_sent}/{self.controller.messages_per_day})")
-            return
-
-        self.controller.run()
-        QMessageBox.information(self, "Bot Started", "The bot has been started.")
+            logging.debug("Creating MainController instance")
+            self.controller = MainController(
+                username=username,
+                password=password,
+                search_link=search_link,
+                message_a=message_a,
+                message_b=message_b,
+                messages_per_day=int(messages_per_day)
+            )
+            logging.debug("MainController instance created")
+            self.controller.run()
+            logging.debug("MainController run() called")
+            QMessageBox.information(self, "Bot Started", "The bot has been started.")
+            logging.debug("Bot started successfully")
+        except Exception as e:
+            logging.error(f"Error running the bot: {e}")
+            QMessageBox.critical(self, "Bot Error", f"An error occurred: {e}")

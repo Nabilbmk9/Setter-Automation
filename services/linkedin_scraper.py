@@ -5,14 +5,16 @@ import time
 from utils.utils import remove_emojis
 
 # Configurer le logger
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG, filename='app.log', filemode='w',
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
 
 class LinkedInScraper:
     def __init__(self, page):
         self.page = page
+        logger.info("LinkedInScraper initialized")
 
-    # Méthodes publiques
     def login(self, username, password):
         self.page.goto("https://www.linkedin.com/login")
         self.page.get_by_label("E-mail ou téléphone").fill(username)
