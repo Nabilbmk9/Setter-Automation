@@ -21,8 +21,8 @@ a = Analysis(
     pathex=['../../'],
     binaries=binaries,
     datas=[
-        ('config/user_config.json', '.'),
-        ('config/app_config.json', '.'),
+        ('../../config/user_config.json', 'config'),
+        ('../../config/app_config.json', 'config'),
         ('../../ms-playwright', './_internal/ms-playwright')
     ] + datas,
     hiddenimports=hiddenimports + [

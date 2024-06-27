@@ -84,7 +84,8 @@ def main():
 
         # Afficher la fenêtre d'annonces si nécessaire
         if combined_message:
-            announcement_window = AnnouncementWindow(combined_message, update_url if has_update else None, parent=main_window)
+            announcement_window = AnnouncementWindow(combined_message, update_url if has_update else None,
+                                                     parent=main_window)
             logging.debug("Announcement window created")
             announcement_window.exec()
             logging.debug("Announcement window executed")
