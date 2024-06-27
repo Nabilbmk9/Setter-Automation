@@ -10,8 +10,33 @@ from ui.styles import get_stylesheet
 from utils.requests_handler import fetch_announcement, check_for_updates
 
 
+def get_resource_path(relative_path):
+    """Obtenir le chemin absolu d'une ressource, en utilisant `sys._MEIPASS` si disponible."""
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
+
 def load_config(file_path):
-    with open(file_path, 'r') as f:
+    # Chemin local et chemin empaqueté
+    local_full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), file_path)
+    packaged_full_path = get_resource_path(f"_internal/{file_path}")
+
+    # Log the paths for debugging
+    logging.debug(f"Local full path: {local_full_path}")
+    logging.debug(f"Packaged full path: {packaged_full_path}")
+
+    # Vérifier l'existence du fichier dans les deux emplacements
+    if os.path.exists(local_full_path):
+        full_path = local_full_path
+        logging.debug(f"Config file found at local path: {local_full_path}")
+    elif os.path.exists(packaged_full_path):
+        full_path = packaged_full_path
+        logging.debug(f"Config file found at packaged path: {packaged_full_path}")
+    else:
+        logging.error(f"Config file does not exist in either path: {local_full_path} or {packaged_full_path}")
+        raise FileNotFoundError(f"No such file or directory: '{local_full_path}' or '{packaged_full_path}'")
+
+    with open(full_path, 'r') as f:
         return json.load(f)
 
 
@@ -33,9 +58,16 @@ def main():
     setup_logging()
     logging.debug("Application started")
 
+    # Log the current working directory for debugging
+    logging.debug(f"Current working directory: {os.getcwd()}")
+
     # Charger les configurations
-    user_config = load_config('config/user_config.json')
-    app_config = load_config('config/app_config.json')
+    try:
+        user_config = load_config('config/user_config.json')
+        app_config = load_config('config/app_config.json')
+    except Exception as e:
+        logging.error(f"Error loading configuration: {e}")
+        return
 
     current_version = app_config['current_version']
     update_url = app_config['update_url']

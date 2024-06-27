@@ -5,12 +5,14 @@ import logging
 
 KEY_FILE_PATH = "secret.key"
 
+
 # Générer une clé et l'enregistrer dans un fichier
 def generate_key():
     key = Fernet.generate_key()
     with open(KEY_FILE_PATH, "wb") as key_file:
         key_file.write(key)
     logging.debug("Generated new encryption key")
+
 
 # Charger la clé
 def load_key():
@@ -20,6 +22,7 @@ def load_key():
     logging.debug(f"Loaded encryption key: {key}")
     return key
 
+
 # Chiffrer un message
 def encrypt_message(message: str) -> str:
     key = load_key()
@@ -27,6 +30,7 @@ def encrypt_message(message: str) -> str:
     encrypted_message = f.encrypt(message.encode())
     logging.debug(f"Encrypted message: {encrypted_message}")
     return base64.urlsafe_b64encode(encrypted_message).decode()
+
 
 # Déchiffrer un message
 def decrypt_message(encrypted_message: str) -> str:
