@@ -2,6 +2,7 @@ import sys
 import logging
 import sqlite3
 import json
+import os
 from PySide6.QtWidgets import QApplication
 from ui.main_window import MainWindow
 from ui.announcement_window import AnnouncementWindow
@@ -14,10 +15,22 @@ def load_config(file_path):
         return json.load(f)
 
 
+def setup_logging():
+    appdata_dir = os.getenv('APPDATA')
+    log_file = os.path.join(appdata_dir, 'linkedin_automation_bot', 'app.log')
+
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
+    logging.basicConfig(
+        filename=log_file,
+        level=logging.DEBUG,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+
 def main():
     # Configurer la journalisation pour écrire dans un fichier
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename='app.log', filemode='w')
-
+    setup_logging()
     logging.debug("Application started")
 
     # Charger les configurations
