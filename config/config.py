@@ -3,8 +3,8 @@ import os
 import logging
 from utils.crypto_utils import encrypt_message, decrypt_message, generate_key
 
-CONFIG_FILE_PATH = 'config.json'
-KEY_FILE_PATH = 'secret.key'
+CONFIG_FILE_PATH = 'config/user_config.json'
+KEY_FILE_PATH = 'config/secret.key'
 
 
 def ensure_key_exists():

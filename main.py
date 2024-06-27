@@ -1,6 +1,7 @@
 import sys
 import logging
 import sqlite3
+import json
 from PySide6.QtWidgets import QApplication
 from ui.main_window import MainWindow
 from ui.announcement_window import AnnouncementWindow
@@ -8,12 +9,25 @@ from ui.styles import get_stylesheet
 from utils.requests_handler import fetch_announcement, check_for_updates
 
 
+def load_config(file_path):
+    with open(file_path, 'r') as f:
+        return json.load(f)
+
+
 def main():
     # Configurer la journalisation pour écrire dans un fichier
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s', filename='app.log',
-                        filemode='w')
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename='app.log', filemode='w')
 
     logging.debug("Application started")
+
+    # Charger les configurations
+    user_config = load_config('config/user_config.json')
+    app_config = load_config('config/app_config.json')
+
+    current_version = app_config['current_version']
+    update_url = app_config['update_url']
+    announcement_url = app_config['announcement_url']
+    version_url = app_config['version_url']
 
     # Test de l'importation de sqlite3
     try:
@@ -33,12 +47,11 @@ def main():
         logging.debug("Stylesheet applied")
 
         # Vérifier les mises à jour
-        current_version = "1.0.0"  # Remplacez par votre version actuelle
-        has_update, latest_version = check_for_updates(current_version)
+        has_update, latest_version = check_for_updates(current_version, version_url)
         logging.debug(f"Update check completed: has_update={has_update}, latest_version={latest_version}")
 
         # Récupérer l'annonce dynamique
-        announcement_message = fetch_announcement()
+        announcement_message = fetch_announcement(announcement_url)
         logging.debug(f"Fetched announcement: {announcement_message}")
 
         # Construire le message combiné
@@ -58,7 +71,7 @@ def main():
 
         # Afficher la fenêtre d'annonces si nécessaire
         if combined_message:
-            announcement_window = AnnouncementWindow(combined_message, parent=main_window)
+            announcement_window = AnnouncementWindow(combined_message, update_url if has_update else None, parent=main_window)
             logging.debug("Announcement window created")
             announcement_window.exec()
             logging.debug("Announcement window executed")
