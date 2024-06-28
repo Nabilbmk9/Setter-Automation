@@ -7,6 +7,7 @@ from config.config import load_config, update_config
 from ui.styles import get_stylesheet
 import os
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()

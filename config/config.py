@@ -2,8 +2,7 @@ import json
 import os
 import logging
 import sys
-
-from utils.crypto_utils import encrypt_message, decrypt_message, generate_key
+from utils.crypto_utils import encrypt_message, decrypt_message, generate_key, load_key
 
 
 def get_resource_path(relative_path):
@@ -29,10 +28,6 @@ def ensure_key_exists():
 
 def load_config():
     config_path = CONFIG_FILE_PATH_LOCAL if os.path.exists(CONFIG_FILE_PATH_LOCAL) else CONFIG_FILE_PATH_PACKAGED
-
-    # Log the paths for debugging
-    logging.debug(f"Local config path: {CONFIG_FILE_PATH_LOCAL}")
-    logging.debug(f"Packaged config path: {CONFIG_FILE_PATH_PACKAGED}")
     logging.debug(f"Using config path: {config_path}")
 
     if not os.path.exists(config_path):
@@ -45,7 +40,9 @@ def load_config():
 
     # Déchiffrer les valeurs sensibles
     try:
+        logging.debug(f"Encrypted password from config: {config.get('LINKEDIN_PASSWORD')}")
         config['LINKEDIN_PASSWORD'] = decrypt_message(config['LINKEDIN_PASSWORD'])
+        logging.debug(f"Decrypted password: {config['LINKEDIN_PASSWORD']}")
     except Exception as e:
         logging.error(f"Failed to decrypt LINKEDIN_PASSWORD: {e}")
         config['LINKEDIN_PASSWORD'] = ""

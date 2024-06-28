@@ -3,16 +3,16 @@ import base64
 import os
 import logging
 
-KEY_FILE_PATH = "secret.key"
-
+KEY_FILE_PATH = "config/secret.key"
 
 # Générer une clé et l'enregistrer dans un fichier
 def generate_key():
+    if not os.path.exists(os.path.dirname(KEY_FILE_PATH)):
+        os.makedirs(os.path.dirname(KEY_FILE_PATH))
     key = Fernet.generate_key()
     with open(KEY_FILE_PATH, "wb") as key_file:
         key_file.write(key)
-    logging.debug("Generated new encryption key")
-
+    logging.debug(f"Generated new encryption key: {key}")
 
 # Charger la clé
 def load_key():
@@ -22,20 +22,25 @@ def load_key():
     logging.debug(f"Loaded encryption key: {key}")
     return key
 
-
 # Chiffrer un message
 def encrypt_message(message: str) -> str:
     key = load_key()
     f = Fernet(key)
     encrypted_message = f.encrypt(message.encode())
-    logging.debug(f"Encrypted message: {encrypted_message}")
+    logging.debug(f"Encrypted message: {encrypted_message} with key: {key}")
     return base64.urlsafe_b64encode(encrypted_message).decode()
-
 
 # Déchiffrer un message
 def decrypt_message(encrypted_message: str) -> str:
-    key = load_key()
-    f = Fernet(key)
-    decrypted_message = f.decrypt(base64.urlsafe_b64decode(encrypted_message.encode()))
-    logging.debug(f"Decrypted message: {decrypted_message}")
-    return decrypted_message.decode()
+    try:
+        key = load_key()
+        f = Fernet(key)
+        logging.debug(f"Decrypting message: {encrypted_message} with key: {key}")
+        decoded_message = base64.urlsafe_b64decode(encrypted_message.encode())
+        logging.debug(f"Base64 decoded message: {decoded_message}")
+        decrypted_message = f.decrypt(decoded_message)
+        logging.debug(f"Decrypted message: {decrypted_message}")
+        return decrypted_message.decode()
+    except Exception as e:
+        logging.error(f"Error decrypting message: {e}", exc_info=True)
+        raise
