@@ -6,7 +6,7 @@ from controllers.main_controller import MainController
 from config.config import load_config, update_config
 from ui.styles import get_stylesheet
 import os
-
+from requests import post
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -78,6 +78,14 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.messages_per_day_label)
         layout.addWidget(self.messages_per_day_input)
 
+        # Ajoutez le champ de saisie pour la clé de licence
+        self.license_key_label = QLabel("Clé de licence:")
+        self.license_key_label.setFont(montserrat)
+        self.license_key_input = QLineEdit(self.config.get('LICENSE_KEY', ''))
+        self.license_key_input.setFont(montserrat)
+        layout.addWidget(self.license_key_label)
+        layout.addWidget(self.license_key_input)
+
         self.start_button = QPushButton("Start Bot")
         self.start_button.setFont(montserrat)
         self.start_button.clicked.connect(self.start_bot)
@@ -87,6 +95,10 @@ class MainWindow(QMainWindow):
         container.setLayout(layout)
         self.setCentralWidget(container)
 
+    def verify_license(self, license_key):
+        response = post('https://licences-gen-bot.ew.r.appspot.com/verify_license', json={"license_key": license_key})
+        return response.json().get('valid', False)
+
     def start_bot(self):
         logging.debug("Start Bot button clicked")
         username = self.username_input.text()
@@ -95,10 +107,17 @@ class MainWindow(QMainWindow):
         message_a = self.message_a_input.text()
         message_b = self.message_b_input.text()
         messages_per_day = self.messages_per_day_input.text()
+        license_key = self.license_key_input.text()
 
-        if not all([username, password, search_link, message_a, message_b, messages_per_day]):
+        if not all([username, password, search_link, message_a, message_b, messages_per_day, license_key]):
             QMessageBox.warning(self, "Input Error", "All fields must be filled!")
             logging.error("Input Error: All fields must be filled!")
+            return
+
+        # Vérifier la licence avant de continuer
+        if not self.verify_license(license_key):
+            QMessageBox.critical(self, "License Error", "Invalid license. Please check your license key.")
+            logging.error("Invalid license. Exiting...")
             return
 
         # Sauvegarder les nouvelles valeurs dans le fichier JSON
@@ -110,7 +129,8 @@ class MainWindow(QMainWindow):
                 'LINKEDIN_SEARCH_LINK': search_link,
                 'MESSAGE_A': message_a,
                 'MESSAGE_B': message_b,
-                'MESSAGES_PER_DAY': messages_per_day
+                'MESSAGES_PER_DAY': messages_per_day,
+                'LICENSE_KEY': license_key  # Sauvegarder la clé de licence
             })
             update_config(self.config)
             logging.debug("Configuration updated successfully")
