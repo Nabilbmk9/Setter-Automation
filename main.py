@@ -40,12 +40,15 @@ def load_config(file_path):
         return json.load(f)
 
 
-def setup_logging():
+def get_log_file_path():
     appdata_dir = os.getenv('APPDATA')
     log_file = os.path.join(appdata_dir, 'linkedin_automation_bot', 'app.log')
-
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    return log_file
 
+
+def setup_logging():
+    log_file = get_log_file_path()
     logging.basicConfig(
         filename=log_file,
         level=logging.DEBUG,
