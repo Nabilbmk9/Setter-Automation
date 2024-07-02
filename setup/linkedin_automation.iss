@@ -3,7 +3,7 @@
 ; Informations de base
 AppName=LinkedIn Automation Bot
 AppVersion=1.0
-DefaultDirName={pf}\LinkedInAutomationBot
+DefaultDirName={userappdata}\LinkedInAutomationBot
 DefaultGroupName=LinkedIn Automation Bot
 OutputDir=.\output
 OutputBaseFilename=LinkedInAutomationBotInstaller
