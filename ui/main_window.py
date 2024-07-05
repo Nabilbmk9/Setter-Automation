@@ -107,17 +107,42 @@ class MainWindow(QMainWindow):
         message_a = self.message_a_input.text()
         message_b = self.message_b_input.text()
         messages_per_day = self.messages_per_day_input.text()
-        license_key = self.license_key_input.text()
+        license_key = self.license_key_input.text().replace(" ", "")
 
         if not all([username, password, search_link, message_a, message_b, messages_per_day, license_key]):
             QMessageBox.warning(self, "Input Error", "All fields must be filled!")
             logging.error("Input Error: All fields must be filled!")
             return
 
+            # Vérifier que les messages ne dépassent pas 300 caractères
+        if len(message_a) > 300:
+            QMessageBox.warning(self, "Erreur de saisie", "Le Message A dépasse la limite de 300 caractères!")
+            logging.error("Erreur de saisie : Le Message A dépasse la limite de 300 caractères!")
+            return
+
+        if len(message_b) > 300:
+            QMessageBox.warning(self, "Erreur de saisie", "Le Message B dépasse la limite de 300 caractères!")
+            logging.error("Erreur de saisie : Le Message A dépasse la limite de 300 caractères!")
+            return
+
+        # Vérifier que le nombre de messages par jour ne dépasse pas 30
+        try:
+            messages_per_day = int(messages_per_day)
+            if messages_per_day > 30:
+                QMessageBox.warning(self, "Erreur de saisie",
+                                    "Le nombre de messages par jour ne doit pas dépasser 30!")
+                logging.error("Erreur de saisie : Le nombre de messages par jour ne doit pas dépasser 30!")
+                return
+        except ValueError:
+            QMessageBox.warning(self, "Erreur de saisie",
+                                "Le nombre de messages par jour doit être un nombre valide!")
+            logging.error("Erreur de saisie : Le nombre de messages par jour doit être un nombre valide!")
+            return
+
         # Vérifier la licence avant de continuer
         if not self.verify_license(license_key):
-            QMessageBox.critical(self, "License Error", "Invalid license. Please check your license key.")
-            logging.error("Invalid license. Exiting...")
+            QMessageBox.critical(self, "Erreur de licence", "Licence invalide. Veuillez vérifier votre clé de licence.")
+            logging.error("Licence invalide. Fermeture...")
             return
 
         # Sauvegarder les nouvelles valeurs dans le fichier JSON
