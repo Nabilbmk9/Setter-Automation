@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
 
         self.messages_per_day_label = QLabel("Messages par jour:")
         self.messages_per_day_label.setFont(montserrat)
-        self.messages_per_day_input = QLineEdit(self.config.get('MESSAGES_PER_DAY', '10'))
+        self.messages_per_day_input = QLineEdit(str(self.config.get('MESSAGES_PER_DAY', '10')))
         self.messages_per_day_input.setFont(montserrat)
         layout.addWidget(self.messages_per_day_label)
         layout.addWidget(self.messages_per_day_input)
