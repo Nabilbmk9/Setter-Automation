@@ -2,3 +2,4 @@
 - logrotate sur le log dans appdata
 - bouton de téléchargement du fichier de log du jour pour que les users puissent le transmettre aux devs facilement
 - vérifier combien de fois est installé le bot ? (savoir si la personne l'utilise sur plusieurs postes)
+- crypter les données de l'exe pour éviter le reverse engineering ?
