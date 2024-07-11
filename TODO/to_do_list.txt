@@ -1,0 +1,5 @@
+- gestion du message d'erreur dans les logs au premier lancement de l'appli: Error decrypting message
+- gérer le message de lancement du bot pas quand le bot a terminer
+- gérer le navigateur chromium en prod
+- gestion langue francais / anglais / autres pour la recherche du bot
+- gérer le app.config

@@ -8,6 +8,7 @@ from ui.styles import get_stylesheet
 import os
 from requests import post
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
