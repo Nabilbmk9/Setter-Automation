@@ -4,3 +4,4 @@
 # Ignorer les fichiers de bytecode Python
 __pycache__/
 *.pyc
+/config/user_config.json
