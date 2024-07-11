@@ -52,7 +52,8 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False
+    console=False,
+    version="version.txt"
 )
 
 coll = COLLECT(
