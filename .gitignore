@@ -6,3 +6,5 @@ __pycache__/
 *.pyc
 /config/user_config.json
 /ms-playwright/
+/build/windows/build/
+/build/windows/dist/
