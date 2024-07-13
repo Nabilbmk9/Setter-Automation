@@ -2,5 +2,6 @@
     "current_version": "1.0.0",
     "update_url": "https://storage.googleapis.com/linkedin-automation-updates/latest.exe",
     "announcement_url": "https://storage.googleapis.com/linkedin-automation-updates/announcement.txt",
-    "version_url": "https://storage.googleapis.com/linkedin-automation-updates/version.txt"
+    "version_url": "https://storage.googleapis.com/linkedin-automation-updates/version.txt",
+    "debug_mode": false
 }
