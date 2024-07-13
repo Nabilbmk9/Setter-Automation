@@ -1,13 +1,13 @@
 Nabil (Voir avec Digicert pour signer le code) - exe bloqué par l'antivirus
-Mathieu - mettre tous les messages d'informations/erreurs en francais
 - gestion du message d'erreur dans les logs au premier lancement de l'appli: Error decrypting message
 - vérifier le fonctionnement si "message par jour" <= 0 ou > 30
-- gérer le message de lancement du bot pas quand le bot a terminer
+- gérer le message de lancement du bot pas quand le bot a terminé
 Nabil - afficher les logs dans le terminal quand on run en local
 - gérer le navigateur chromium en prod
 - gestion langue francais / anglais / autres pour la recherche du bot
 - ajouter logo sur le bandeau de l'application
 - changer le titre sur le bandeau de l'application
+- mettre tous les messages d'informations/erreurs dans des constantes ?
 - gérer le bot sur mac
 - gérer le app.config (les url ne sont pas secure)
 - gérer la résolution
