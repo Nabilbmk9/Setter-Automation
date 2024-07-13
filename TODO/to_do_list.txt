@@ -11,3 +11,4 @@ Mathieu - mettre tous les messages d'informations/erreurs en francais
 - gérer le bot sur mac
 - gérer le app.config (les url ne sont pas secure)
 - gérer la résolution
+- revoir le fichier spec et enlever les choses inutiles
