@@ -179,10 +179,11 @@ class MainWindow(QMainWindow):
                 logging.info("Daily message limit reached, bot will not start.")
                 return
 
+            logging.debug("Bot started successfully")
+
             self.controller.run()
             logging.debug("MainController run() called")
-            QMessageBox.information(self, "Lancement du bot", "Le bot a démarré.")
-            logging.debug("Bot started successfully")
+            QMessageBox.information(self, "Fin du bot", "Le bot a terminé son exécution.")
         except Exception as e:
             logging.error(f"Error running the bot: {e}")
             QMessageBox.critical(self, "Erreur critique", f"Une erreur est survenue : {e}")

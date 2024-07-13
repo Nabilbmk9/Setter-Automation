@@ -1,7 +1,6 @@
 Nabil (Voir avec Digicert pour signer le code) - exe bloqué par l'antivirus
 - gestion du message d'erreur dans les logs au premier lancement de l'appli: Error decrypting message
 - vérifier le fonctionnement si "message par jour" <= 0 ou > 30
-- gérer le message de lancement du bot pas quand le bot a terminé
 - gérer le navigateur chromium en prod
 - gestion langue francais / anglais / autres pour la recherche du bot
 - ajouter logo sur le bandeau de l'application
