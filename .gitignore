@@ -8,3 +8,4 @@ __pycache__/
 /ms-playwright/
 /build/windows/build/
 /build/windows/dist/
+/dist/
