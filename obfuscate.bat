@@ -1,4 +1,6 @@
 @echo off
+rd /s /q "dist"
+
 pyarmor gen main.py
 pyarmor gen config
 pyarmor gen services
