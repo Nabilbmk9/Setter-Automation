@@ -21,12 +21,6 @@ class MainController:
 
     def run(self):
         try:
-            # Vérifier la limite de messages avant de démarrer
-            limit_reached, messages_sent = self.data_manager.has_reached_message_limit(self.messages_per_day)
-            if limit_reached:
-                logging.info(f"Daily message limit reached at the start: {messages_sent}/{self.messages_per_day}")
-                return
-
             logging.info("Starting the browser manager and LinkedIn scraper")
             self.browser_manager = BrowserManager(headless=False, block_images=False)
             self.scraper = LinkedInScraper(self.browser_manager.new_page())
