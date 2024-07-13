@@ -17,18 +17,31 @@ binaries += [
 block_cipher = None
 
 a = Analysis(
-    ['../../main.py'],
+    ['../../dist/main.py'],
     pathex=['../../'],
     binaries=binaries,
     datas=[
-        ('../../config/user_config.json', 'config'),
-        ('../../config/app_config.json', 'config'),
-        ('../../ms-playwright', './_internal/ms-playwright')
+        ('../../dist/config/', 'config'),
+        ('../../dist/config/user_config.json', 'config'),
+        ('../../dist/config/app_config.json', 'config'),
+        ('../../dist/ms-playwright', './_internal/ms-playwright'),
+        ('../../dist/pyarmor_runtime_000000/', 'pyarmor_runtime'),
+        ('../../dist/ui/', 'ui'),
+        ('../../dist/utils/', 'utils'),
+        ('../../dist/services/', 'services'),
+        ('../../dist/controllers/', 'controllers'),
+        ('../../dist/hooks/', 'hooks')
+        # Ajoutez d'autres fichiers et dossiers nécessaires ici
     ] + datas,
     hiddenimports=hiddenimports + [
         'playwright.sync_api',
         'sqlite3',
-        'dotenv'
+        'dotenv',
+        'PySide6',
+        'PySide6.QtWidgets',
+        'cryptography',
+        'cryptography.fernet',
+        'requests'
     ],
     hookspath=['hooks'],
     runtime_hooks=[],

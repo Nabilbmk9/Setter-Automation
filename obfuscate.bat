@@ -7,4 +7,6 @@ pyarmor gen hooks
 pyarmor gen ui
 pyarmor gen utils
 
-xcopy /E /Y ms-playwright dist/
+xcopy ms-playwright dist\ms-playwright /E /I /Y
+xcopy config\user_config.json dist\config\ /Y
+xcopy config\app_config.json dist\config\ /Y
