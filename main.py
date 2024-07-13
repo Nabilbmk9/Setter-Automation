@@ -8,12 +8,7 @@ from ui.main_window import MainWindow
 from ui.announcement_window import AnnouncementWindow
 from ui.styles import get_stylesheet
 from utils.requests_handler import fetch_announcement, check_for_updates
-
-
-def get_resource_path(relative_path):
-    """Obtenir le chemin absolu d'une ressource, en utilisant `sys._MEIPASS` si disponible."""
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
+from utils.utils import get_resource_path
 
 
 def load_config(file_path):

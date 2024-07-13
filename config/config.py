@@ -1,14 +1,8 @@
 import json
 import os
 import logging
-import sys
 from utils.crypto_utils import encrypt_message, decrypt_message, generate_key, load_key
-
-
-def get_resource_path(relative_path):
-    """Obtenir le chemin absolu d'une ressource, en utilisant `sys._MEIPASS` si disponible."""
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
+from utils.utils import get_resource_path
 
 
 # Définir les chemins des fichiers de configuration
