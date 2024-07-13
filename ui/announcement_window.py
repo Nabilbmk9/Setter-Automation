@@ -1,9 +1,11 @@
 import os
 import requests
-import logging
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QMessageBox, QProgressBar
 from PySide6.QtCore import Qt, QThread, Signal
 from ui.styles import get_stylesheet
+from config.logging_config import setup_logging
+
+logger = setup_logging()
 
 
 class DownloadThread(QThread):
@@ -35,7 +37,7 @@ class DownloadThread(QThread):
                             self.progress.emit(done)
             self.finished.emit()
         except Exception as e:
-            logging.error(f"Failed to download update: {e}")
+            logger.error(f"Failed to download update: {e}")
             self.finished.emit()
 
 
@@ -95,5 +97,5 @@ class AnnouncementWindow(QDialog):
             os.startfile(update_path)
             self.accept()
         except Exception as e:
-            logging.error(f"Failed to start update: {e}")
+            logger.error(f"Failed to start update: {e}")
             QMessageBox.critical(self, "Erreur", "L'installation de la mise à jour a échoué.")

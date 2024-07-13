@@ -1,11 +1,10 @@
 import sqlite3
 from datetime import datetime, date
-import logging
 import threading
 import queue
+from config.logging_config import setup_logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logging()
 
 
 class DataManager:
