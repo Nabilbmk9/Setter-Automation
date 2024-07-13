@@ -173,7 +173,7 @@ class MainWindow(QMainWindow):
             logging.debug("MainController instance created")
             self.controller.run()
             logging.debug("MainController run() called")
-            QMessageBox.information(self, "Lancement du bot", "Le bot a démarrer.")
+            QMessageBox.information(self, "Lancement du bot", "Le bot a démarré.")
             logging.debug("Bot started successfully")
         except Exception as e:
             logging.error(f"Error running the bot: {e}")
