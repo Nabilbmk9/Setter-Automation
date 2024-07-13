@@ -1,26 +1,33 @@
 import logging
+
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFontDatabase, QFont
+from PySide6.QtGui import QFontDatabase, QFont, QIcon, QPixmap
 from controllers.main_controller import MainController
 from config.config import load_config, update_config
 from ui.styles import get_stylesheet
-import os
+
 from requests import post
+from utils.utils import get_resource_path
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Bot Application")
+        self.setWindowTitle("Bot LinkedIn")
+
+        path_icon = get_resource_path("ui/resources/logo3d.png")
+        self.setWindowIcon(QIcon(path_icon))
+
         self.resize(400, 600)
 
         # Charger la configuration
         self.config = load_config()
 
-        font_path = os.path.abspath('ui/fonts/Montserrat-Regular.ttf')
-        font_id = QFontDatabase.addApplicationFont(font_path)
-        loaded_fonts = QFontDatabase.applicationFontFamilies(font_id)
+        # TODO Les 3 lignes de code ci-dessous ne semblent pas être utilisées ! A supprimer ?
+        # font_path = get_resource_path('ui/fonts/Montserrat-Regular.ttf')
+        # font_id = QFontDatabase.addApplicationFont(font_path)
+        # loaded_fonts = QFontDatabase.applicationFontFamilies(font_id)
 
         montserrat = QFont("Montserrat", 10)
         self.setStyleSheet(get_stylesheet())

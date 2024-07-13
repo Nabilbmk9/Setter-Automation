@@ -1,4 +1,6 @@
 import os
+import sys
+
 from dotenv import load_dotenv
 import re
 import urllib.parse
@@ -47,3 +49,9 @@ def remove_emojis(data):
                            u"\u3030"
                            "]+", flags=re.UNICODE)
     return emoji_pattern.sub(r'', data)
+
+
+def get_resource_path(relative_path):
+    """Obtenir le chemin absolu d'une ressource, en utilisant `sys._MEIPASS` si disponible."""
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)

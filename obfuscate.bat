@@ -12,3 +12,4 @@ pyarmor gen utils
 xcopy ms-playwright dist\ms-playwright /E /I /Y
 xcopy config\user_config.json dist\config\ /Y
 xcopy config\app_config.json dist\config\ /Y
+xcopy ui\resources dist\ui\resources /E /I /Y
