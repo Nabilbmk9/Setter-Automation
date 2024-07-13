@@ -9,3 +9,4 @@ Nabil (Obfuscation du code)- exe bloqué par l'antivirus
 - changer le titre sur le bandeau de l'application
 - gérer le bot sur mac
 - gérer le app.config (les url ne sont pas secure)
+- gérer la résolution

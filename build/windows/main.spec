@@ -7,44 +7,35 @@ from PyInstaller.utils.hooks import collect_all
 # Collecter toutes les dépendances nécessaires pour sqlite3
 datas, binaries, hiddenimports = collect_all('sqlite3')
 
-# Ajouter manuellement les fichiers DLL nécessaires
-python_dlls = os.path.join(sys.base_prefix, 'DLLs')
-binaries += [
-    (os.path.join(python_dlls, 'sqlite3.dll'), '.'),
-    (os.path.join(python_dlls, '_sqlite3.pyd'), '.')
-]
-
-block_cipher = None
-
 a = Analysis(
     ['../../main.py'],
-    pathex=['../../'],
+    pathex=[],
     binaries=binaries,
-    datas=[
+    datas=datas + [
         ('../../config/user_config.json', 'config'),
         ('../../config/app_config.json', 'config'),
         ('../../ms-playwright', './_internal/ms-playwright')
-    ] + datas,
+    ],
     hiddenimports=hiddenimports + [
         'playwright.sync_api',
         'sqlite3',
         'dotenv'
     ],
     hookspath=['hooks'],
+    hooksconfig={},
     runtime_hooks=[],
     excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
+    noarchive=False,
+    optimize=0,
 )
-
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.datas,
     [],
-    exclude_binaries=True,
     name='linkedin_automation',
     debug=False,
     bootloader_ignore_signals=False,
@@ -53,16 +44,10 @@ exe = EXE(
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
     version="version.txt"
-)
-
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='linkedin_automation'
 )
