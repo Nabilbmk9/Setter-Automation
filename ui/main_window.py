@@ -156,7 +156,7 @@ class MainWindow(QMainWindow):
                 'MESSAGE_A': message_a,
                 'MESSAGE_B': message_b,
                 'MESSAGES_PER_DAY': messages_per_day,
-                'LICENSE_KEY': license_key  # Sauvegarder la clé de licence
+                'LICENSE_KEY': license_key
             })
             update_config(self.config)
             logging.debug("Configuration updated successfully")
@@ -171,6 +171,14 @@ class MainWindow(QMainWindow):
                 messages_per_day=int(messages_per_day)
             )
             logging.debug("MainController instance created")
+
+            limit_reached, messages_sent = self.controller.data_manager.has_reached_message_limit(int(messages_per_day))
+            if limit_reached:
+                QMessageBox.warning(self, "Limite atteinte",
+                                    f"Le bot a déjà envoyé le nombre maximum de messages aujourd'hui ({messages_sent}/{messages_per_day}).")
+                logging.info("Daily message limit reached, bot will not start.")
+                return
+
             self.controller.run()
             logging.debug("MainController run() called")
             QMessageBox.information(self, "Lancement du bot", "Le bot a démarré.")
