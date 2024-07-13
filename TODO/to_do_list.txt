@@ -1,4 +1,4 @@
-- exe bloqué par l'antivirus
+Nabil (Obfuscation du code)- exe bloqué par l'antivirus
 - mettre tous les messages d'informations/erreurs en francais
 - gestion du message d'erreur dans les logs au premier lancement de l'appli: Error decrypting message
 - vérifier le fonctionnement si "message par jour" <= 0 ou > 30
