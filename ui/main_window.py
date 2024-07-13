@@ -111,18 +111,18 @@ class MainWindow(QMainWindow):
         license_key = self.license_key_input.text().replace(" ", "")
 
         if not all([username, password, search_link, message_a, message_b, messages_per_day, license_key]):
-            QMessageBox.warning(self, "Input Error", "All fields must be filled!")
+            QMessageBox.warning(self, "Erreur de saisie", "Tous les champs doivent être remplis !")
             logging.error("Input Error: All fields must be filled!")
             return
 
             # Vérifier que les messages ne dépassent pas 300 caractères
         if len(message_a) > 300:
-            QMessageBox.warning(self, "Erreur de saisie", "Le Message A dépasse la limite de 300 caractères!")
+            QMessageBox.warning(self, "Erreur de saisie", "Le Message A dépasse la limite de 300 caractères !")
             logging.error("Erreur de saisie : Le Message A dépasse la limite de 300 caractères!")
             return
 
         if len(message_b) > 300:
-            QMessageBox.warning(self, "Erreur de saisie", "Le Message B dépasse la limite de 300 caractères!")
+            QMessageBox.warning(self, "Erreur de saisie", "Le Message B dépasse la limite de 300 caractères !")
             logging.error("Erreur de saisie : Le Message A dépasse la limite de 300 caractères!")
             return
 
@@ -131,12 +131,12 @@ class MainWindow(QMainWindow):
             messages_per_day = int(messages_per_day)
             if messages_per_day > 30:
                 QMessageBox.warning(self, "Erreur de saisie",
-                                    "Le nombre de messages par jour ne doit pas dépasser 30!")
+                                    "Le nombre de messages par jour ne doit pas dépasser 30 !")
                 logging.error("Erreur de saisie : Le nombre de messages par jour ne doit pas dépasser 30!")
                 return
         except ValueError:
             QMessageBox.warning(self, "Erreur de saisie",
-                                "Le nombre de messages par jour doit être un nombre valide!")
+                                "Le nombre de messages par jour doit être un nombre valide !")
             logging.error("Erreur de saisie : Le nombre de messages par jour doit être un nombre valide!")
             return
 
@@ -173,8 +173,8 @@ class MainWindow(QMainWindow):
             logging.debug("MainController instance created")
             self.controller.run()
             logging.debug("MainController run() called")
-            QMessageBox.information(self, "Bot Started", "The bot has been started.")
+            QMessageBox.information(self, "Lancement du bot", "Le bot a démarrer.")
             logging.debug("Bot started successfully")
         except Exception as e:
             logging.error(f"Error running the bot: {e}")
-            QMessageBox.critical(self, "Bot Error", f"An error occurred: {e}")
+            QMessageBox.critical(self, "Erreur critique", f"Une erreur est survenue : {e}")
