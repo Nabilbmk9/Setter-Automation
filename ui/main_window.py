@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Bot LinkedIn")
 
-        path_icon = get_resource_path("ui/resources/logo3d.png")
+        path_icon = get_resource_path("../ui/resources/logo3d.png")
         self.setWindowIcon(QIcon(path_icon))
 
         self.resize(400, 600)
