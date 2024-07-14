@@ -4,7 +4,6 @@ import logging
 from utils.crypto_utils import encrypt_message, decrypt_message, generate_key, load_key
 from utils.utils import get_resource_path
 
-
 # Définir les chemins des fichiers de configuration
 CONFIG_FILE_PATH_LOCAL = 'config/user_config.json'
 KEY_FILE_PATH_LOCAL = 'config/secret.key'
@@ -44,7 +43,8 @@ def load_config():
 
 
 def update_config(config):
-    key_path = KEY_FILE_PATH_LOCAL if os.path.exists(KEY_FILE_PATH_LOCAL) else KEY_FILE_PATH_PACKAGED
+    # TODO path vers secret key non utilisé
+    # key_path = KEY_FILE_PATH_LOCAL if os.path.exists(KEY_FILE_PATH_LOCAL) else KEY_FILE_PATH_PACKAGED
     config_path = CONFIG_FILE_PATH_LOCAL if os.path.exists(CONFIG_FILE_PATH_LOCAL) else CONFIG_FILE_PATH_PACKAGED
 
     ensure_key_exists()
