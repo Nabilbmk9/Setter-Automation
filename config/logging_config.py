@@ -23,14 +23,14 @@ def setup_logging():
     if debug_mode:
         logging.basicConfig(
             level=logging.DEBUG,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            format='%(asctime)s - %(levelname)s - %(message)s'
         )
     else:
         log_file = get_log_file_path()
         logging.basicConfig(
             filename=log_file,
             level=logging.DEBUG,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            format='%(asctime)s - %(levelname)s - %(message)s'
         )
 
     logger = logging.getLogger(__name__)
