@@ -1,13 +1,13 @@
 import logging
 
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFontDatabase, QFont, QIcon, QPixmap
-from controllers.main_controller import MainController
-from config.config import load_config, update_config
-from ui.styles import get_stylesheet
-
+from PySide6.QtGui import QFont, QIcon
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox
 from requests import post
+
+from config.config import load_config, update_config
+from controllers.main_controller import MainController
+from ui.styles import get_stylesheet
 from utils.utils import get_resource_path
 
 
@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Bot LinkedIn")
 
-        path_icon = get_resource_path("../ui/resources/logo3d.png")
+        path_icon = get_resource_path("ui/resources/logo3d.png")
         self.setWindowIcon(QIcon(path_icon))
 
         self.resize(400, 600)
