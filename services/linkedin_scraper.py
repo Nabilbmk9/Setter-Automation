@@ -4,21 +4,9 @@ import random
 import time
 
 from utils.utils import remove_emojis
+from config.logging_config import setup_logging
 
-
-def get_log_file_path():
-    appdata_dir = os.getenv('APPDATA')
-    log_file = os.path.join(appdata_dir, 'linkedin_automation_bot', 'app.log')
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    return log_file
-
-
-# Configurer le logger pour écrire dans AppData
-log_file = get_log_file_path()
-
-logging.basicConfig(level=logging.DEBUG, filename=log_file, filemode='a',
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = setup_logging()
 
 
 class LinkedInScraper:

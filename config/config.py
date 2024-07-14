@@ -34,9 +34,8 @@ def load_config():
 
     # Déchiffrer les valeurs sensibles
     try:
-        logging.debug(f"Encrypted password from config: {config.get('LINKEDIN_PASSWORD')}")
+        logging.debug(f"Encrypted password from config")
         config['LINKEDIN_PASSWORD'] = decrypt_message(config['LINKEDIN_PASSWORD'])
-        logging.debug(f"Decrypted password: {config['LINKEDIN_PASSWORD']}")
     except Exception as e:
         logging.error(f"Failed to decrypt LINKEDIN_PASSWORD: {e}")
         config['LINKEDIN_PASSWORD'] = ""

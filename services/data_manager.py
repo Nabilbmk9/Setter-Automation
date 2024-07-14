@@ -1,11 +1,10 @@
 import sqlite3
 from datetime import datetime, date
-import logging
 import threading
 import queue
+from config.logging_config import setup_logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logging()
 
 
 class DataManager:
@@ -246,4 +245,7 @@ class DataManager:
 
     def has_reached_message_limit(self, messages_per_day):
         messages_sent = self.count_messages_sent_today()
-        return messages_sent >= messages_per_day, messages_sent
+        if messages_sent >= messages_per_day:
+            logger.info(f"Daily message limit reached: {messages_sent}/{messages_per_day}")
+            return True, messages_sent
+        return False, messages_sent
