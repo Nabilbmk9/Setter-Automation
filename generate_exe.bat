@@ -5,4 +5,4 @@ cd build\windows
 
 rd /s /q "build"
 rd /s /q "dist"
-pyinstaller main.spec
+pyinstaller main_obfuscate.spec

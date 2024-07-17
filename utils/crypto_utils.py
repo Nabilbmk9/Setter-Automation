@@ -5,6 +5,7 @@ import logging
 
 KEY_FILE_PATH = "config/secret.key"
 
+
 # Générer une clé et l'enregistrer dans un fichier
 def generate_key():
     if not os.path.exists(os.path.dirname(KEY_FILE_PATH)):
@@ -14,6 +15,7 @@ def generate_key():
         key_file.write(key)
     logging.debug(f"Generated new encryption key: {key}")
 
+
 # Charger la clé
 def load_key():
     if not os.path.exists(KEY_FILE_PATH):
@@ -22,6 +24,7 @@ def load_key():
     logging.debug(f"Loaded encryption key")
     return key
 
+
 # Chiffrer un message
 def encrypt_message(message: str) -> str:
     key = load_key()
@@ -29,6 +32,7 @@ def encrypt_message(message: str) -> str:
     encrypted_message = f.encrypt(message.encode())
     logging.debug(f"Encrypted message")
     return base64.urlsafe_b64encode(encrypted_message).decode()
+
 
 # Déchiffrer un message
 def decrypt_message(encrypted_message: str) -> str:

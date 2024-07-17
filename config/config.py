@@ -33,8 +33,9 @@ def load_config():
 
     # Déchiffrer les valeurs sensibles
     try:
-        logging.debug(f"Encrypted password from config")
-        config['LINKEDIN_PASSWORD'] = decrypt_message(config['LINKEDIN_PASSWORD'])
+        if config['LINKEDIN_PASSWORD'] != "":
+            logging.debug(f"Encrypted password from config {config['LINKEDIN_PASSWORD']}")
+            config['LINKEDIN_PASSWORD'] = decrypt_message(config['LINKEDIN_PASSWORD'])
     except Exception as e:
         logging.error(f"Failed to decrypt LINKEDIN_PASSWORD: {e}")
         config['LINKEDIN_PASSWORD'] = ""
@@ -48,7 +49,8 @@ def update_config(config):
     config_path = CONFIG_FILE_PATH_LOCAL if os.path.exists(CONFIG_FILE_PATH_LOCAL) else CONFIG_FILE_PATH_PACKAGED
 
     ensure_key_exists()
-    config['LINKEDIN_PASSWORD'] = encrypt_message(config['LINKEDIN_PASSWORD'])
+    if config['LINKEDIN_PASSWORD'] != "":
+        config['LINKEDIN_PASSWORD'] = encrypt_message(config['LINKEDIN_PASSWORD'])
 
     with open(config_path, 'w') as f:
         json.dump(config, f, indent=4)
