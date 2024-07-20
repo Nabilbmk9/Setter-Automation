@@ -1,7 +1,8 @@
 import logging
+
 from services.browser_manager import BrowserManager
-from services.linkedin_scraper import LinkedInScraper
 from services.data_manager import DataManager
+from services.linkedin_scraper import LinkedInScraper, AuthenticationError
 from utils.utils import extract_keywords_from_search_link, get_next_message
 
 
@@ -68,7 +69,8 @@ class MainController:
 
                     profile.update(profile_details)
                     self.scraper.click_connect_or_more_button()
-                    next_message, self.message_toggle = get_next_message(self.message_a, self.message_b, self.message_toggle)
+                    next_message, self.message_toggle = get_next_message(self.message_a, self.message_b,
+                                                                         self.message_toggle)
                     self.scraper.enter_custom_message(profile.get('first_name'), next_message)
 
                     self.data_manager.add_contact(
@@ -94,6 +96,8 @@ class MainController:
                 profiles = self.scraper.get_all_profiles_on_page()
                 logging.info(f"Profiles found: {len(profiles)} on page {last_page_visited}")
 
+        except AuthenticationError as e:
+            raise AuthenticationError(e)
         except Exception as e:
             logging.error(f"Error running the bot: {e}")
         finally:

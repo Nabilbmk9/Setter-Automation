@@ -7,6 +7,7 @@ from requests import post
 
 from config.config import load_config, update_config
 from controllers.main_controller import MainController
+from services.linkedin_scraper import AuthenticationError
 from ui.styles import get_stylesheet
 from utils.utils import get_resource_path
 
@@ -196,6 +197,9 @@ class MainWindow(QMainWindow):
             self.controller.run()
             logging.debug("MainController run() called")
             QMessageBox.information(self, "Fin du bot", "Le bot a terminé son exécution.")
+        except AuthenticationError as e:
+            logging.error(f"Erreur d'authentification: {e}")
+            QMessageBox.warning(self, "Erreur d'authentification", str(e))
         except Exception as e:
             logging.error(f"Error running the bot: {e}")
             QMessageBox.critical(self, "Erreur critique", f"Une erreur est survenue : {e}")

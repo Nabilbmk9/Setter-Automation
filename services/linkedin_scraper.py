@@ -1,12 +1,14 @@
-import logging
-import os
 import random
 import time
 
-from utils.utils import remove_emojis
 from config.logging_config import setup_logging
+from utils.utils import remove_emojis
 
 logger = setup_logging()
+
+
+class AuthenticationError(Exception):
+    pass
 
 
 class LinkedInScraper:
@@ -24,6 +26,10 @@ class LinkedInScraper:
     def ensure_authenticated(self):
         while self._check_for_email_verification_pin():
             self.page.wait_for_timeout(10000)
+        if not self._check_for_wrong_email_or_password():
+            raise AuthenticationError(
+                "Veuillez vérifier votre saisie de l'email et du mot de passe !"
+            )
         logger.info("Authentification vérifiée")
 
     def get_all_profiles_on_page(self):
@@ -54,7 +60,8 @@ class LinkedInScraper:
         """Remplace {first_name} dans le message et l'écrit dans le textarea."""
         custom_message = message_template.replace("{first_name}", first_name)
         try:
-            self.page.wait_for_selector('textarea[name="message"]', timeout=5000)  # Attendre que le textarea soit visible
+            self.page.wait_for_selector('textarea[name="message"]',
+                                        timeout=5000)  # Attendre que le textarea soit visible
             message_textarea = self.page.query_selector('textarea[name="message"]')
             if message_textarea:
                 message_textarea.fill(custom_message)
@@ -119,7 +126,7 @@ class LinkedInScraper:
             logger.error(f"Erreur lors de la récupération de la partie information : {e}")
             return "Non spécifié"
 
-    #TODO revoir toute la fonction
+    # TODO revoir toute la fonction
     def _scrape_experience(self):
         try:
             experience_sections = self.page.query_selector_all('section:has(div#experience) ul li')
@@ -178,11 +185,22 @@ class LinkedInScraper:
         except:
             return False
 
+    def _check_for_wrong_email_or_password(self):
+        input_username = self.page.get_by_label("E-mail ou téléphone")
+        input_password = self.page.get_by_label("Mot de passe")
+
+        username_with_error = input_username.evaluate("element => element.classList.contains('form__input--error')")
+        password_with_error = input_password.evaluate("element => element.classList.contains('form__input--error')")
+
+        if username_with_error or password_with_error:
+            return False
+        return True
     def _fetch_profiles_list(self):
         return self.page.query_selector_all('li.reusable-search__result-container')
 
     def _extract_profile_info(self, profile_content):
-        connect_or_follow = profile_content.query_selector('div.entity-result__actions.entity-result__divider').inner_text()
+        connect_or_follow = profile_content.query_selector(
+            'div.entity-result__actions.entity-result__divider').inner_text()
         if connect_or_follow not in ["Se connecter", "Suivre"]:
             return None
         linkedin_profile_link = profile_content.query_selector('a').get_attribute('href')
@@ -253,7 +271,6 @@ class LinkedInScraper:
         else:
             logger.error("Bouton 'Envoyer une invitation' non trouvé")
 
-
     def _load_all_messages(self):
         # Attente explicite pour que la page se charge initialement
         self.page.wait_for_selector('.msg-conversation-listitem', state='attached')
@@ -282,4 +299,3 @@ class LinkedInScraper:
             except Exception as e:
                 print(f"Exception occurred while loading messages: {e}")
                 break
-
