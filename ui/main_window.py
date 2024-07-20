@@ -119,32 +119,37 @@ class MainWindow(QMainWindow):
 
         if not all([username, password, search_link, message_a, message_b, messages_per_day, license_key]):
             QMessageBox.warning(self, "Erreur de saisie", "Tous les champs doivent être remplis !")
-            logging.error("Input Error: All fields must be filled!")
+            logging.error("Erreur de saisie", "Tous les champs doivent être remplis !")
             return
 
             # Vérifier que les messages ne dépassent pas 300 caractères
         if len(message_a) > 300:
             QMessageBox.warning(self, "Erreur de saisie", "Le Message A dépasse la limite de 300 caractères !")
-            logging.error("Erreur de saisie : Le Message A dépasse la limite de 300 caractères!")
+            logging.error("Erreur de saisie : Le Message A dépasse la limite de 300 caractères !")
             return
 
         if len(message_b) > 300:
             QMessageBox.warning(self, "Erreur de saisie", "Le Message B dépasse la limite de 300 caractères !")
-            logging.error("Erreur de saisie : Le Message A dépasse la limite de 300 caractères!")
+            logging.error("Erreur de saisie : Le Message B dépasse la limite de 300 caractères !")
             return
 
         # Vérifier que le nombre de messages par jour ne dépasse pas 30
         try:
             messages_per_day = int(messages_per_day)
-            if messages_per_day > 30:
-                QMessageBox.warning(self, "Erreur de saisie",
-                                    "Le nombre de messages par jour ne doit pas dépasser 30 !")
-                logging.error("Erreur de saisie : Le nombre de messages par jour ne doit pas dépasser 30!")
+            if messages_per_day <= 0 or messages_per_day > 30:
+                QMessageBox.warning(
+                    self, "Erreur de saisie",
+                    "Le nombre de messages par jour doit être supérieur ou égal à 1 et ne doit pas dépasser 30 !"
+                )
+                logging.error(
+                    "Erreur de saisie : "
+                    "Le nombre de messages par jour doit être supérieur ou égal à 1 et ne doit pas dépasser 30 !"
+                )
                 return
         except ValueError:
             QMessageBox.warning(self, "Erreur de saisie",
                                 "Le nombre de messages par jour doit être un nombre valide !")
-            logging.error("Erreur de saisie : Le nombre de messages par jour doit être un nombre valide!")
+            logging.error("Erreur de saisie : Le nombre de messages par jour doit être un nombre valide !")
             return
 
         # Vérifier la licence avant de continuer
