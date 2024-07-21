@@ -2,13 +2,10 @@ import random
 import time
 
 from config.logging_config import setup_logging
+from constants.errors import AuthenticationError
 from utils.utils import remove_emojis
 
 logger = setup_logging()
-
-
-class AuthenticationError(Exception):
-    pass
 
 
 class LinkedInScraper:
@@ -195,6 +192,7 @@ class LinkedInScraper:
         if username_with_error or password_with_error:
             return False
         return True
+
     def _fetch_profiles_list(self):
         return self.page.query_selector_all('li.reusable-search__result-container')
 

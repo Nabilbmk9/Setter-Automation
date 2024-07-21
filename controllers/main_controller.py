@@ -1,8 +1,9 @@
 import logging
 
+from constants.errors import AuthenticationError
 from services.browser_manager import BrowserManager
 from services.data_manager import DataManager
-from services.linkedin_scraper import LinkedInScraper, AuthenticationError
+from services.linkedin_scraper import LinkedInScraper
 from utils.utils import extract_keywords_from_search_link, get_next_message
 
 

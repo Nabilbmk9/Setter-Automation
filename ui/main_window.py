@@ -6,8 +6,8 @@ from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEd
 from requests import post
 
 from config.config import load_config, update_config
+from constants.errors import AuthenticationError
 from controllers.main_controller import MainController
-from services.linkedin_scraper import AuthenticationError
 from ui.styles import get_stylesheet
 from utils.utils import get_resource_path
 
