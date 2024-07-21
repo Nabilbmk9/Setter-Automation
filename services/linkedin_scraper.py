@@ -1,8 +1,8 @@
-import logging
-import os
 import random
 import time
 
+from constants.errors import LanguageError
+from constants.labels import LABELS
 from utils.utils import remove_emojis
 from config.logging_config import setup_logging
 
@@ -12,13 +12,17 @@ logger = setup_logging()
 class LinkedInScraper:
     def __init__(self, page):
         self.page = page
+        self.page.goto("https://www.linkedin.com/login")
+
+        self.labels = None
+        self.init_labels_from_language()
+
         logger.info("LinkedInScraper initialized")
 
     def login(self, username, password):
-        self.page.goto("https://www.linkedin.com/login")
-        self.page.get_by_label("E-mail ou téléphone").fill(username)
-        self.page.get_by_label("Mot de passe").fill(password)
-        self.page.get_by_label("S’identifier", exact=True).click()
+        self.page.get_by_label(self.labels.email_or_phone).fill(username)
+        self.page.get_by_label(self.labels.password).fill(password)
+        self.page.get_by_label(self.labels.login, exact=True).click()
         logger.info("Login effectué")
 
     def ensure_authenticated(self):
@@ -38,13 +42,13 @@ class LinkedInScraper:
         action_buttons, button_texts = self._get_profile_action_buttons()
 
         # Essayer de cliquer sur "Se connecter"
-        if self._click_button_by_text(action_buttons, "Se connecter"):
+        if self._click_button_by_text(action_buttons, self.labels.connect):
             logger.info("Bouton 'Se connecter' cliqué")
             self._click_add_note_button()
             return
 
         # Sinon, cliquer sur "Plus" puis "Se connecter" dans le menu déroulant
-        if self._click_button_by_text(action_buttons, "Plus"):
+        if self._click_button_by_text(action_buttons, self.labels.plus):
             logger.info("Bouton 'Plus' cliqué")
             if self._click_connect_button_from_dropdown():
                 logger.info("Bouton 'Se connecter' cliqué dans le menu déroulant")
@@ -54,7 +58,8 @@ class LinkedInScraper:
         """Remplace {first_name} dans le message et l'écrit dans le textarea."""
         custom_message = message_template.replace("{first_name}", first_name)
         try:
-            self.page.wait_for_selector('textarea[name="message"]', timeout=5000)  # Attendre que le textarea soit visible
+            self.page.wait_for_selector('textarea[name="message"]',
+                                        timeout=5000)  # Attendre que le textarea soit visible
             message_textarea = self.page.query_selector('textarea[name="message"]')
             if message_textarea:
                 message_textarea.fill(custom_message)
@@ -119,7 +124,7 @@ class LinkedInScraper:
             logger.error(f"Erreur lors de la récupération de la partie information : {e}")
             return "Non spécifié"
 
-    #TODO revoir toute la fonction
+    # TODO revoir toute la fonction
     def _scrape_experience(self):
         try:
             experience_sections = self.page.query_selector_all('section:has(div#experience) ul li')
@@ -182,7 +187,8 @@ class LinkedInScraper:
         return self.page.query_selector_all('li.reusable-search__result-container')
 
     def _extract_profile_info(self, profile_content):
-        connect_or_follow = profile_content.query_selector('div.entity-result__actions.entity-result__divider').inner_text()
+        connect_or_follow = profile_content.query_selector(
+            'div.entity-result__actions.entity-result__divider').inner_text()
         if connect_or_follow not in ["Se connecter", "Suivre"]:
             return None
         linkedin_profile_link = profile_content.query_selector('a').get_attribute('href')
@@ -253,7 +259,6 @@ class LinkedInScraper:
         else:
             logger.error("Bouton 'Envoyer une invitation' non trouvé")
 
-
     def _load_all_messages(self):
         # Attente explicite pour que la page se charge initialement
         self.page.wait_for_selector('.msg-conversation-listitem', state='attached')
@@ -283,3 +288,15 @@ class LinkedInScraper:
                 print(f"Exception occurred while loading messages: {e}")
                 break
 
+    """
+    Cette fonction doit être appelée avant le login et apres la connexion car la langue peut etre différente entre 
+    l'ouverture initiale de LinkedIn et après la connection de l'utilisateur car la langue de la page devient celle du 
+    profil de l'utilisateur. 
+    """
+    def init_labels_from_language(self):
+        language = self.page.evaluate("document.documentElement.lang")
+        if language in LABELS:
+            self.labels = LABELS[language]
+        else:
+            logger.error(f"Langue du profil LinkedIn non supportée : {language}")
+            raise LanguageError(f"Langue du profil LinkedIn non supportée : {language}")

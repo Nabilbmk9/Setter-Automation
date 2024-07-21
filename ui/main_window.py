@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEd
 from requests import post
 
 from config.config import load_config, update_config
+from constants.errors import LanguageError
 from controllers.main_controller import MainController
 from ui.styles import get_stylesheet
 from utils.utils import get_resource_path
@@ -196,6 +197,10 @@ class MainWindow(QMainWindow):
             self.controller.run()
             logging.debug("MainController run() called")
             QMessageBox.information(self, "Fin du bot", "Le bot a terminé son exécution.")
+
+        except LanguageError as e:
+            logging.error(f"Erreur de language : {e}")
+            QMessageBox.warning(self, "Erreur de language : ", str(e))
         except Exception as e:
             logging.error(f"Error running the bot: {e}")
             QMessageBox.critical(self, "Erreur critique", f"Une erreur est survenue : {e}")

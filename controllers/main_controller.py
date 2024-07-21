@@ -1,4 +1,6 @@
 import logging
+
+from constants.errors import LanguageError
 from services.browser_manager import BrowserManager
 from services.linkedin_scraper import LinkedInScraper
 from services.data_manager import DataManager
@@ -28,6 +30,7 @@ class MainController:
             logging.info("Logging in to LinkedIn")
             self.scraper.login(self.username, self.password)
             self.scraper.ensure_authenticated()
+            self.scraper.init_labels_from_language()
 
             keywords = extract_keywords_from_search_link(self.search_link)
             self.data_manager.add_search_link(self.search_link, keywords)
@@ -94,6 +97,8 @@ class MainController:
                 profiles = self.scraper.get_all_profiles_on_page()
                 logging.info(f"Profiles found: {len(profiles)} on page {last_page_visited}")
 
+        except LanguageError as e:
+            raise LanguageError(e)
         except Exception as e:
             logging.error(f"Error running the bot: {e}")
         finally:
