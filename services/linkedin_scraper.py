@@ -20,9 +20,9 @@ class LinkedInScraper:
         logger.info("LinkedInScraper initialized")
 
     def login(self, username, password):
-        self.page.get_by_label(self.labels.email_or_phone).fill(username)
-        self.page.get_by_label(self.labels.password).fill(password)
-        self.page.get_by_label(self.labels.login, exact=True).click()
+        self.page.get_by_label(self.labels["email_or_phone"]).fill(username)
+        self.page.get_by_label(self.labels["password"]).fill(password)
+        self.page.get_by_label(self.labels["login"], exact=True).click()
         logger.info("Login effectué")
 
     def ensure_authenticated(self):
@@ -42,13 +42,13 @@ class LinkedInScraper:
         action_buttons, button_texts = self._get_profile_action_buttons()
 
         # Essayer de cliquer sur "Se connecter"
-        if self._click_button_by_text(action_buttons, self.labels.connect):
+        if self._click_button_by_text(action_buttons, self.labels["connect"]):
             logger.info("Bouton 'Se connecter' cliqué")
             self._click_add_note_button()
             return
 
         # Sinon, cliquer sur "Plus" puis "Se connecter" dans le menu déroulant
-        if self._click_button_by_text(action_buttons, self.labels.plus):
+        if self._click_button_by_text(action_buttons, self.labels["plus"]):
             logger.info("Bouton 'Plus' cliqué")
             if self._click_connect_button_from_dropdown():
                 logger.info("Bouton 'Se connecter' cliqué dans le menu déroulant")
@@ -189,7 +189,7 @@ class LinkedInScraper:
     def _extract_profile_info(self, profile_content):
         connect_or_follow = profile_content.query_selector(
             'div.entity-result__actions.entity-result__divider').inner_text()
-        if connect_or_follow not in ["Se connecter", "Suivre"]:
+        if connect_or_follow not in self.labels["connect_or_follow"]:
             return None
         linkedin_profile_link = profile_content.query_selector('a').get_attribute('href')
 
@@ -234,7 +234,7 @@ class LinkedInScraper:
         dropdown_buttons = self.page.query_selector_all('.artdeco-dropdown__item--is-dropdown')
         for dropdown_button in dropdown_buttons:
             dropdown_text = dropdown_button.inner_text().strip()
-            if dropdown_text == "Se connecter":
+            if dropdown_text == self.labels['connect']:
                 dropdown_button.click()
                 return True
         return False
@@ -242,14 +242,14 @@ class LinkedInScraper:
     def _click_add_note_button(self):
         """Clique sur le bouton 'Ajouter une note' après avoir cliqué sur 'Se connecter'."""
         self.page.wait_for_timeout(1000)  # Attendre que le bouton apparaisse
-        add_note_button = self.page.query_selector('button[aria-label="Ajouter une note"]')
+        add_note_button = self.page.query_selector(f'button[aria-label="{self.labels["add_a_note"]}"]')
         if add_note_button:
             add_note_button.click()
 
     def _click_send_invitation_button(self):
         """Clique sur le bouton 'Envoyer' après avoir écrit le message."""
         self.page.wait_for_timeout(1000)  # Attendre que le bouton apparaisse
-        send_button = self.page.query_selector('button[aria-label="Envoyer une invitation"]')
+        send_button = self.page.query_selector(f'button[aria-label="{self.labels['send_invitation']}"]')
         if send_button:
             send_button.click()
             logger.info("Invitation envoyée")
@@ -295,8 +295,10 @@ class LinkedInScraper:
     """
     def init_labels_from_language(self):
         language = self.page.evaluate("document.documentElement.lang")
-        if language in LABELS:
-            self.labels = LABELS[language]
+        normalized_language = language.split('-')[0]
+
+        if normalized_language in LABELS:
+            self.labels = LABELS[normalized_language]
         else:
             logger.error(f"Langue du profil LinkedIn non supportée : {language}")
             raise LanguageError(f"Langue du profil LinkedIn non supportée : {language}")
