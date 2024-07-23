@@ -21,12 +21,13 @@ class LinkedInScraper:
         logger.info("Login effectué")
 
     def ensure_authenticated(self):
-        while self._check_for_email_verification_pin():
-            self.page.wait_for_timeout(10000)
         if not self._check_for_wrong_email_or_password():
             raise AuthenticationError(
                 "Veuillez vérifier votre saisie de l'email et du mot de passe !"
             )
+        while self._check_for_email_verification_pin():
+            self.page.wait_for_timeout(10000)
+
         logger.info("Authentification vérifiée")
 
     def get_all_profiles_on_page(self):
@@ -183,15 +184,19 @@ class LinkedInScraper:
             return False
 
     def _check_for_wrong_email_or_password(self):
-        input_username = self.page.get_by_label("E-mail ou téléphone")
-        input_password = self.page.get_by_label("Mot de passe")
+        if self.element_exists("E-mail ou téléphone") and self.element_exists("Mot de passe"):
+            input_username = self.page.get_by_label("E-mail ou téléphone")
+            input_password = self.page.get_by_label("Mot de passe")
 
-        username_with_error = input_username.evaluate("element => element.classList.contains('form__input--error')")
-        password_with_error = input_password.evaluate("element => element.classList.contains('form__input--error')")
+            username_with_error = input_username.evaluate("element => element.classList.contains('form__input--error')")
+            password_with_error = input_password.evaluate("element => element.classList.contains('form__input--error')")
 
-        if username_with_error or password_with_error:
-            return False
+            if username_with_error or password_with_error:
+                return False
         return True
+
+    def element_exists(self, label):
+        return True if self.page.get_by_label(label).count() > 0 else False
 
     def _fetch_profiles_list(self):
         return self.page.query_selector_all('li.reusable-search__result-container')
