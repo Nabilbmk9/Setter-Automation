@@ -249,7 +249,7 @@ class LinkedInScraper:
     def _click_send_invitation_button(self):
         """Clique sur le bouton 'Envoyer' après avoir écrit le message."""
         self.page.wait_for_timeout(1000)  # Attendre que le bouton apparaisse
-        send_button = self.page.query_selector(f'button[aria-label="{self.labels['send_invitation']}"]')
+        send_button = self.page.query_selector(f'button[aria-label="{self.labels["send_invitation"]}"]')
         if send_button:
             send_button.click()
             logger.info("Invitation envoyée")
