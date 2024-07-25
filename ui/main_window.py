@@ -2,7 +2,7 @@ import logging
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QIcon
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox, QCheckBox
 from requests import post
 
 from config.config import load_config, update_config
@@ -42,7 +42,12 @@ class MainWindow(QMainWindow):
         self.title_label.setObjectName("title")
         self.title_label.setFont(montserrat)
         layout.addWidget(self.title_label)
-        layout.addSpacing(30)
+        layout.addSpacing(10)
+
+        # Créer une checkbox
+        self.checkbox = QCheckBox("Connexion à LinkedIn avec un compte google ?")
+        self.checkbox.stateChanged.connect(self.update_labels_username_password)
+        layout.addWidget(self.checkbox)
 
         self.username_label = QLabel("Email LinkedIn:")
         self.username_label.setFont(montserrat)
@@ -103,6 +108,14 @@ class MainWindow(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
+
+    def update_labels_username_password(self, state):
+        if state == 2:  # Si la checkbox est cochée
+            self.username_label.setText("Email compte Google:")
+            self.password_label.setText("Mot de passe compte Google:")
+        else:  # Si la checkbox est décochée
+            self.username_label.setText("Email LinkedIn:")
+            self.password_label.setText("Mot de passe LinkedIn:")
 
     def verify_license(self, license_key):
         response = post('https://licences-gen-bot.ew.r.appspot.com/verify_license', json={"license_key": license_key})
