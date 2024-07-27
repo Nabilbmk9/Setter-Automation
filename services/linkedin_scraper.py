@@ -19,11 +19,32 @@ class LinkedInScraper:
 
         logger.info("LinkedInScraper initialized")
 
-    def login(self, username, password):
-        self.page.get_by_label(self.labels["email_or_phone"]).fill(username)
-        self.page.get_by_label(self.labels["password"]).fill(password)
-        self.page.get_by_label(self.labels["login"], exact=True).click()
-        logger.info("Login effectué")
+    def login(self, is_connexion_with_google, username, password):
+        if is_connexion_with_google:
+            try:
+                iframe_locator = self.page.frame_locator("iframe[title='Sign in with Google Button']")
+                iframe_locator.locator("div#container").click()
+
+                # Changer le contexte pour le popup de connexion Google
+                # self.page.wait_for_selector("input[type='email']")
+                # self.page.fill("input[type='email']", username)
+                # self.page.click("button[jsname='LgbsSe']")  # Cliquer sur Suivant
+                #
+                # # Attendre et remplir le mot de passe
+                # self.page.wait_for_selector("input[type='password']", state='visible')
+                # self.page.fill("input[type='password']", password)
+                # self.page.click("button[jsname='LgbsSe']")  # Cliquer sur Suivant
+                #
+                # # Attendre que la redirection soit terminée
+                # self.page.wait_for_navigation()
+                # logger.info("Login effectué avec google")
+            except Exception as e:
+                logger.error(f"erreur connexion avec google : {e}")
+        else:
+            self.page.get_by_label(self.labels["email_or_phone"]).fill(username)
+            self.page.get_by_label(self.labels["password"]).fill(password)
+            self.page.get_by_label(self.labels["login"], exact=True).click()
+            logger.info("Login effectué avec email")
 
     def ensure_authenticated(self):
         while self._check_for_email_verification_pin():
@@ -293,6 +314,7 @@ class LinkedInScraper:
     l'ouverture initiale de LinkedIn et après la connection de l'utilisateur car la langue de la page devient celle du 
     profil de l'utilisateur. 
     """
+
     def init_labels_from_language(self):
         language = self.page.evaluate("document.documentElement.lang")
         normalized_language = language.split('-')[0]

@@ -45,9 +45,9 @@ class MainWindow(QMainWindow):
         layout.addSpacing(10)
 
         # Créer une checkbox
-        self.checkbox = QCheckBox("Connexion à LinkedIn avec un compte google ?")
-        self.checkbox.stateChanged.connect(self.update_labels_username_password)
-        layout.addWidget(self.checkbox)
+        self.checkboxGoogle = QCheckBox("Connexion à LinkedIn avec un compte google ?")
+        self.checkboxGoogle.stateChanged.connect(self.update_labels_username_password)
+        layout.addWidget(self.checkboxGoogle)
 
         self.username_label = QLabel("Email LinkedIn:")
         self.username_label.setFont(montserrat)
@@ -123,6 +123,7 @@ class MainWindow(QMainWindow):
 
     def start_bot(self):
         logging.debug("Start Bot button clicked")
+        state_checkbox_google = self.checkboxGoogle.isChecked()
         username = self.username_input.text()
         password = self.password_input.text()
         search_link = self.search_link_input.text()
@@ -176,6 +177,7 @@ class MainWindow(QMainWindow):
         try:
             logging.debug("Updating configuration with new values")
             self.config.update({
+                'CHECKBOX_GOOGLE': state_checkbox_google,
                 'LINKEDIN_EMAIL': username,
                 'LINKEDIN_PASSWORD': password,
                 'LINKEDIN_SEARCH_LINK': search_link,
@@ -188,7 +190,8 @@ class MainWindow(QMainWindow):
             logging.debug("Configuration updated successfully")
 
             logging.debug("Creating MainController instance")
-            self.controller = MainController(
+            controller = MainController(
+                state_checkbox_google= state_checkbox_google,
                 username=username,
                 password=password,
                 search_link=search_link,
@@ -198,7 +201,7 @@ class MainWindow(QMainWindow):
             )
             logging.debug("MainController instance created")
 
-            limit_reached, messages_sent = self.controller.data_manager.has_reached_message_limit(int(messages_per_day))
+            limit_reached, messages_sent = controller.data_manager.has_reached_message_limit(int(messages_per_day))
             if limit_reached:
                 QMessageBox.warning(self, "Limite atteinte",
                                     f"Le bot a déjà envoyé le nombre maximum de messages aujourd'hui ({messages_sent}/{messages_per_day}).")
@@ -207,7 +210,7 @@ class MainWindow(QMainWindow):
 
             logging.debug("Bot started successfully")
 
-            self.controller.run()
+            controller.run()
             logging.debug("MainController run() called")
             QMessageBox.information(self, "Fin du bot", "Le bot a terminé son exécution.")
 

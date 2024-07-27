@@ -8,9 +8,10 @@ from utils.utils import extract_keywords_from_search_link, get_next_message
 
 
 class MainController:
-    def __init__(self, username, password, search_link, message_a, message_b, messages_per_day):
+    def __init__(self, state_checkbox_google, username, password, search_link, message_a, message_b, messages_per_day):
         logging.info("Initializing MainController")
         self.browser_manager = None
+        self.state_checkbox_google = state_checkbox_google
         self.username = username
         self.password = password
         self.search_link = search_link
@@ -28,7 +29,7 @@ class MainController:
             self.scraper = LinkedInScraper(self.browser_manager.new_page())
 
             logging.info("Logging in to LinkedIn")
-            self.scraper.login(self.username, self.password)
+            self.scraper.login(self.state_checkbox_google, self.username, self.password)
             self.scraper.ensure_authenticated()
             self.scraper.init_labels_from_language()
 

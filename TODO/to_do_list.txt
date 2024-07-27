@@ -7,3 +7,4 @@ Nabil (Voir avec Digicert pour signer le code) - exe bloqué par l'antivirus
 - gérer le app.config (les url ne sont pas secure)
 - gérer la résolution
 - revoir le fichier spec et enlever les choses inutiles
+- Faire un bouton "Stop bot" ?
