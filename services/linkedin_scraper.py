@@ -22,6 +22,7 @@ class LinkedInScraper:
     def login(self, is_connexion_with_google, username, password):
         if is_connexion_with_google:
             try:
+                time.sleep(1) # TODO A voir si on peut remplacer ce sleep par un wait page ou wait locator
                 iframe_locator = self.page.frame_locator("iframe[title='Sign in with Google Button']")
                 iframe_locator.locator("div#container").click()
 
