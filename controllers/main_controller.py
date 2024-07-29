@@ -26,7 +26,7 @@ class MainController:
         try:
             logging.info("Starting the browser manager and LinkedIn scraper")
             self.browser_manager = BrowserManager(headless=False, block_images=False)
-            self.scraper = LinkedInScraper(self.browser_manager.new_page())
+            self.scraper = LinkedInScraper(self.browser_manager.new_page(), self.browser_manager.context)
 
             logging.info("Logging in to LinkedIn")
             self.scraper.login(self.state_checkbox_google, self.username, self.password)

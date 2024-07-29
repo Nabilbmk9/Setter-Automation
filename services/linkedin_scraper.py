@@ -10,10 +10,10 @@ logger = setup_logging()
 
 
 class LinkedInScraper:
-    def __init__(self, page):
+    def __init__(self, page, context):
         self.page = page
         self.page.goto("https://www.linkedin.com/login")
-
+        self.context = context
         self.labels = None
         self.init_labels_from_language()
 
@@ -22,23 +22,29 @@ class LinkedInScraper:
     def login(self, is_connexion_with_google, username, password):
         if is_connexion_with_google:
             try:
-                time.sleep(1) # TODO A voir si on peut remplacer ce sleep par un wait page ou wait locator
+                time.sleep(1)  # TODO A voir si on peut remplacer ce sleep par un wait page ou wait locator
                 iframe_locator = self.page.frame_locator("iframe[title='Sign in with Google Button']")
-                iframe_locator.locator("div#container").click()
+                google_auth_button = iframe_locator.locator("div#container")
+                google_auth_button.click()
 
-                # Changer le contexte pour le popup de connexion Google
-                # self.page.wait_for_selector("input[type='email']")
-                # self.page.fill("input[type='email']", username)
-                # self.page.click("button[jsname='LgbsSe']")  # Cliquer sur Suivant
-                #
-                # # Attendre et remplir le mot de passe
-                # self.page.wait_for_selector("input[type='password']", state='visible')
-                # self.page.fill("input[type='password']", password)
-                # self.page.click("button[jsname='LgbsSe']")  # Cliquer sur Suivant
-                #
-                # # Attendre que la redirection soit terminée
-                # self.page.wait_for_navigation()
-                # logger.info("Login effectué avec google")
+                with self.context.expect_page() as new_page_info:
+                    google_auth_button.click()
+
+                google_auth_page = new_page_info.value
+                google_auth_page.wait_for_load_state()
+
+                google_auth_page.locator("input[type='email']").fill(username)
+                google_auth_page.locator("button[jsname='LgbsSe']:has-text('Suivant')").click()
+                google_auth_page.locator("input[type='password']").fill(password)
+                google_auth_page.locator("button[jsname='LgbsSe']:has-text('Suivant')").click()
+                try:
+                    google_auth_page.locator("button[jsname='LgbsSe']:has-text('Continue')").click()
+                except:
+                    pass
+                try:
+                    google_auth_page.locator("button[jsname='bySMBb']:has-text('Not now')").click()
+                except:
+                    pass
             except Exception as e:
                 logger.error(f"erreur connexion avec google : {e}")
         else:
