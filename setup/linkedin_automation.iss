@@ -6,7 +6,7 @@ AppVersion=1.0
 DefaultDirName={userappdata}\LinkedInAutomationBot
 DefaultGroupName=LinkedIn Automation Bot
 OutputDir=.\output
-OutputBaseFilename=LinkedInAutomationBotInstaller
+OutputBaseFilename=LinkedInAutomationBotInstaller_v1
 Compression=lzma
 SolidCompression=yes
 
