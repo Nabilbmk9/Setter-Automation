@@ -1,4 +1,3 @@
-; Script généré par Inno Setup Compiler
 [Setup]
 ; Informations de base
 AppName=LinkedIn Automation Bot
@@ -7,15 +6,16 @@ DefaultDirName={userappdata}\LinkedInAutomationBot
 DefaultGroupName=LinkedIn Automation Bot
 OutputDir=.\output
 OutputBaseFilename=LinkedInAutomationBotInstaller_v1
-Compression=lzma
-SolidCompression=yes
+Compression=lzma2/fast
+SolidCompression=no
+UseSetupLdr=yes
+DiskSpanning=no
 SetupIconFile=C:\Users\boulm\Python_file\setting_automation\ui\resources\logo3d.ico
 
 [Files]
 ; Inclure tous les fichiers nécessaires depuis le dossier dist
 Source: "C:\Users\boulm\Python_file\setting_automation\build\windows\dist\linkedin_automation\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\Users\boulm\Python_file\setting_automation\ui\resources\logo3d.ico"; DestDir: "{app}\resources"; Flags: ignoreversion
-
 
 [Icons]
 ; Créer un raccourci sur le bureau et dans le menu démarrer avec ton icône
