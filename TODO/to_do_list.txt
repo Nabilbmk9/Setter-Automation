@@ -1,4 +1,4 @@
-Nabil (Voir avec Digicert pour signer le code) - exe bloqué par l'antivirus
+- Ameliorer le visuel pour le message
 - gérer le navigateur chromium en prod
 - ajouter une page "statistique" pour voir combien de message ont été envoyé etc...
 - trouver un moyen de voir le nombre de réponse sur les messages envoyé
