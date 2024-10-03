@@ -2,7 +2,8 @@ import logging
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QIcon
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QMessageBox, QDialog, \
+    QTextEdit, QDialogButtonBox
 from requests import post
 
 from config.config import load_config, update_config
@@ -68,10 +69,11 @@ class MainWindow(QMainWindow):
 
         self.message_a_label = QLabel("Message Template A:")
         self.message_a_label.setFont(montserrat)
-        self.message_a_input = QLineEdit(self.config.get('MESSAGE_A', ''))
-        self.message_a_input.setFont(montserrat)
+        self.message_a_button = QPushButton(self.config.get('MESSAGE_A', '')[:1] + '...')
+        self.message_a_button.setFont(montserrat)
+        self.message_a_button.clicked.connect(self.edit_message_a)
         layout.addWidget(self.message_a_label)
-        layout.addWidget(self.message_a_input)
+        layout.addWidget(self.message_a_button)
 
         self.message_b_label = QLabel("Message Template B:")
         self.message_b_label.setFont(montserrat)
@@ -103,6 +105,26 @@ class MainWindow(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
+
+    def edit_message_a(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Edit Message Template A")
+        dialog_layout = QVBoxLayout()
+
+        text_edit = QTextEdit()
+        text_edit.setPlainText(self.config.get('MESSAGE_A', ''))
+        dialog_layout.addWidget(text_edit)
+
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+        dialog_layout.addWidget(button_box)
+
+        dialog.setLayout(dialog_layout)
+        if dialog.exec_() == QDialog.Accepted:
+            message = text_edit.toPlainText()
+            self.config['MESSAGE_A'] = message
+            self.message_a_button.setText(message[:30] + '...')
 
     def verify_license(self, license_key):
         response = post('https://licences-gen-bot.ew.r.appspot.com/verify_license', json={"license_key": license_key})
