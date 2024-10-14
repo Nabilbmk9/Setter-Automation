@@ -33,7 +33,12 @@ class LinkedInScraper:
     def get_all_profiles_on_page(self):
         self.page.wait_for_selector('li.reusable-search__result-container')
         all_profiles_list = self._fetch_profiles_list()
-        all_profiles_info = [self._extract_profile_info(profile_content) for profile_content in all_profiles_list]
+        all_profiles_info = [
+            self._extract_profile_info(profile_content)
+            for profile_content in all_profiles_list
+        ]
+        # Filtrer les profils non valides
+        all_profiles_info = [info for info in all_profiles_info if info is not None]
         logger.info(f"{len(all_profiles_info)} profils trouvés sur la page")
         return all_profiles_info
 
@@ -187,18 +192,26 @@ class LinkedInScraper:
         return self.page.query_selector_all('li.reusable-search__result-container')
 
     def _extract_profile_info(self, profile_content):
-        connect_or_follow = profile_content.query_selector(
-            'div.entity-result__actions.entity-result__divider').inner_text()
+        action_div = profile_content.query_selector('div.entity-result__actions.entity-result__divider')
+        if not action_div:
+            return None
+        connect_or_follow = action_div.inner_text()
         if connect_or_follow not in self.labels["connect_or_follow"]:
             return None
-        linkedin_profile_link = profile_content.query_selector('a').get_attribute('href')
 
-        # Modification ici pour le nom complet
+        linkedin_profile_link_element = profile_content.query_selector('a')
+        if not linkedin_profile_link_element:
+            return None
+        linkedin_profile_link = linkedin_profile_link_element.get_attribute('href')
+
+        # Modification pour le nom complet
         full_name_element = profile_content.query_selector('span.entity-result__title-text a span[dir="ltr"]')
-        full_name = full_name_element.inner_text().strip()  # Retire les espaces superflus
-        full_name = remove_emojis(full_name)  # Enlève les emojis si nécessaire
+        if not full_name_element:
+            return None
+        full_name = full_name_element.inner_text().strip()
+        full_name = remove_emojis(full_name)
 
-        # Extraction du prénom et du nom si possible
+        # Extraction du prénom et du nom
         name_parts = full_name.split()
         first_name = name_parts[0] if len(name_parts) > 0 else ""
         last_name = name_parts[1] if len(name_parts) > 1 else ""
