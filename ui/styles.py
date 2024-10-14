@@ -20,7 +20,21 @@ def get_stylesheet():
             padding: 5px;
             margin-bottom: 10px;
         }
-        QPushButton {
+        /* Style pour les boutons des messages */
+        QPushButton#messageButton {
+            background-color: #243672;  /* Même couleur que QLineEdit */
+            color: white;
+            border: 2px solid #7a3ef3;  /* Même bordure que QLineEdit */
+            border-radius: 10px;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        QPushButton#messageButton:hover {
+            background-color: #2b3b63;  /* Couleur légèrement plus claire au survol */
+        }
+        /* Style pour le bouton "Start Bot" */
+        QPushButton#startButton {
             background-color: #ff4500;
             color: white;
             border-radius: 10px;
@@ -29,7 +43,7 @@ def get_stylesheet():
             font-size: 14px;
             margin-top: 20px;
         }
-        QPushButton:hover {
+        QPushButton#startButton:hover {
             background-color: #ff5714;
         }
         QMessageBox {
@@ -62,5 +76,12 @@ def get_stylesheet():
         }
         QDialog QPushButton:hover {
             background-color: #ff5714;
+        }
+        QTextEdit {
+            background-color: #243672;
+            color: white;
+            border: 2px solid #7a3ef3;
+            border-radius: 10px;
+            padding: 5px;
         }
     """
