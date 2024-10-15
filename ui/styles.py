@@ -27,8 +27,10 @@ def get_stylesheet():
             border: 2px solid #7a3ef3;  /* Même bordure que QLineEdit */
             border-radius: 10px;
             padding: 10px;
+            padding-left: 15px;  /* Ajouter un padding à gauche */
             font-weight: bold;
             font-size: 14px;
+            text-align: left;  /* Alignement du texte à gauche */
         }
         QPushButton#messageButton:hover {
             background-color: #2b3b63;  /* Couleur légèrement plus claire au survol */
