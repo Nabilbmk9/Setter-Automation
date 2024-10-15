@@ -1,24 +1,27 @@
+# main.py
+import json
 import sys
 import logging
 import sqlite3
-import json
 import os
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QDialog
 from ui.main_window import MainWindow
 from ui.announcement_window import AnnouncementWindow
+from ui.license_window import LicenseWindow
 from ui.styles import get_stylesheet
 from utils.requests_handler import fetch_announcement, check_for_updates
+from utils.license_utils import verify_license
 from config.logging_config import setup_logging
+from config.config import load_config
 from utils.utils import get_resource_path
 
 
-
-def load_config(file_path):
+def load_app_config(file_path):
     # Chemin local et chemin empaqueté
     local_full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), file_path)
     packaged_full_path = get_resource_path(f"_internal/{file_path}")
 
-    # Log the paths for debugging
+    # Log des chemins pour le débogage
     logging.debug(f"Local full path: {local_full_path}")
     logging.debug(f"Packaged full path: {packaged_full_path}")
 
@@ -36,84 +39,90 @@ def load_config(file_path):
     with open(full_path, 'r') as f:
         return json.load(f)
 
-
 def main():
-    # Configurer la journalisation pour écrire dans un fichier ou dans le terminal
+    # Configurer la journalisation
     logger = setup_logging()
-    logger.debug("Application started")
+    logger.debug("Application démarrée")
 
-    logger.debug(f"Current working directory: {os.getcwd()}")
-
-    # Charger les configurations
+    # Charger la configuration utilisateur
     try:
-        user_config = load_config('config/user_config.json')
-        app_config = load_config('config/app_config.json')
+        user_config = load_config()
     except Exception as e:
-        logger.error(f"Error loading configuration: {e}")
+        logger.error(f"Erreur lors du chargement de la configuration utilisateur: {e}")
         return
+
+    app = QApplication([])
+
+    # Appliquer le style
+    app.setStyleSheet(get_stylesheet())
+    logger.debug("Stylesheet appliqué")
+
+    # Charger les configurations de l'application
+    try:
+        app_config = load_app_config('config/app_config.json')  # Utilisation de load_app_config
+    except Exception as e:
+        logger.error(f"Erreur lors du chargement de la configuration de l'application: {e}")
+        return
+
+    # Valider la présence des clés nécessaires
+    required_keys = ['current_version', 'update_url', 'announcement_url', 'version_url']
+    for key in required_keys:
+        if key not in app_config:
+            logger.error(f"La clé '{key}' est manquante dans app_config.json.")
+            return
 
     current_version = app_config['current_version']
     update_url = app_config['update_url']
     announcement_url = app_config['announcement_url']
     version_url = app_config['version_url']
 
-    # Test de l'importation de sqlite3
-    try:
-        logger.debug("Testing sqlite3 import and connection...")
-        conn = sqlite3.connect(':memory:')
-        logger.debug("Successfully connected to sqlite3 in-memory database.")
-        conn.close()
-    except Exception as e:
-        logger.error(f"Error during sqlite3 test: {e}")
-        raise
+    # Vérifier les mises à jour
+    has_update, latest_version = check_for_updates(current_version, version_url)
+    logger.debug(f"Vérification des mises à jour terminée: has_update={has_update}, latest_version={latest_version}")
 
-    try:
-        app = QApplication([])
+    # Récupérer l'annonce dynamique
+    announcement_message = fetch_announcement(announcement_url)
+    logger.debug(f"Annonce récupérée: {announcement_message}")
 
-        # Appliquer le style globalement
-        app.setStyleSheet(get_stylesheet())
-        logger.debug("Stylesheet applied")
+    # Construire le message combiné
+    combined_message = ""
+    if announcement_message and has_update:
+        combined_message = f"{announcement_message}<br><br>Une nouvelle version ({latest_version}) est disponible !"
+    elif announcement_message:
+        combined_message = announcement_message
+    elif has_update:
+        combined_message = f"Une nouvelle version ({latest_version}) est disponible !"
 
-        # Vérifier les mises à jour
-        has_update, latest_version = check_for_updates(current_version, version_url)
-        logger.debug(f"Update check completed: has_update={has_update}, latest_version={latest_version}")
+    logger.debug(f"Message combiné: {combined_message}")
 
-        # Récupérer l'annonce dynamique
-        announcement_message = fetch_announcement(announcement_url)
-        logger.debug(f"Fetched announcement: {announcement_message}")
+    # Vérifier la licence
+    license_key = user_config.get('LICENSE_KEY', '')
+    if not license_key or not verify_license(license_key):
+        license_window = LicenseWindow()
+        if license_window.exec() != QDialog.Accepted:
+            sys.exit()  # Quitter l'application si la licence n'est pas validée
+        else:
+            # Recharger la configuration pour obtenir la nouvelle clé de licence
+            user_config = load_config()
+            license_key = user_config.get('LICENSE_KEY', '')
 
-        # Construire le message combiné
-        combined_message = ""
-        if announcement_message and has_update:
-            combined_message = f"{announcement_message}<br><br>Une nouvelle version ({latest_version}) est disponible !"
-        elif announcement_message:
-            combined_message = announcement_message
-        elif has_update:
-            combined_message = f"Une nouvelle version ({latest_version}) est disponible !"
+    # Créer la fenêtre principale
+    main_window = MainWindow()
+    logger.debug("Fenêtre principale créée")
 
-        logger.debug(f"Combined message: {combined_message}")
+    # Afficher la fenêtre d'annonces si nécessaire
+    if combined_message:
+        announcement_window = AnnouncementWindow(combined_message, update_url if has_update else None,
+                                                 parent=main_window)
+        logger.debug("Fenêtre d'annonce créée")
+        announcement_window.exec()
+        logger.debug("Fenêtre d'annonce exécutée")
 
-        # Créer la fenêtre principale
-        main_window = MainWindow()
-        logger.debug("Main window created")
+    # Afficher la fenêtre principale
+    main_window.show()
+    logger.debug("Fenêtre principale affichée")
 
-        # Afficher la fenêtre d'annonces si nécessaire
-        if combined_message:
-            announcement_window = AnnouncementWindow(combined_message, update_url if has_update else None,
-                                                     parent=main_window)
-            logger.debug("Announcement window created")
-            announcement_window.exec()
-            logger.debug("Announcement window executed")
-
-        # Afficher la fenêtre principale
-        main_window.show()
-        logger.debug("Main window shown")
-
-        sys.exit(app.exec())
-    except Exception as e:
-        logger.error(f"An error occurred: {e}")
-        raise
-
+    sys.exit(app.exec())
 
 if __name__ == '__main__':
     main()

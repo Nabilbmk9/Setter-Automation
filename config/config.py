@@ -1,57 +1,88 @@
+# config/config.py
+
 import json
 import os
 import logging
-from utils.crypto_utils import encrypt_message, decrypt_message, generate_key, load_key
+from utils.crypto_utils import (
+    encrypt_linkedin_password,
+    decrypt_linkedin_password,
+    encrypt_license_key,
+    decrypt_license_key
+)
 from utils.utils import get_resource_path
 
-# Définir les chemins des fichiers de configuration
-CONFIG_FILE_PATH_LOCAL = 'config/user_config.json'
-KEY_FILE_PATH_LOCAL = 'config/secret.key'
+def load_config(config_file_path=None):
+    # Si aucun chemin n'est fourni, utiliser le fichier de configuration utilisateur par défaut
+    if config_file_path is None:
+        config_file_path = 'config/user_config.json'
 
-# Utiliser le chemin relatif correct pour les fichiers empaquetés
-CONFIG_FILE_PATH_PACKAGED = get_resource_path('config/user_config.json')
-KEY_FILE_PATH_PACKAGED = get_resource_path('config/secret.key')
+    config_path_local = config_file_path
+    config_path_packaged = get_resource_path(config_file_path)
 
-
-def ensure_key_exists():
-    key_path = KEY_FILE_PATH_LOCAL if os.path.exists(KEY_FILE_PATH_LOCAL) else KEY_FILE_PATH_PACKAGED
-    if not os.path.exists(key_path):
-        generate_key()
-
-
-def load_config():
-    config_path = CONFIG_FILE_PATH_LOCAL if os.path.exists(CONFIG_FILE_PATH_LOCAL) else CONFIG_FILE_PATH_PACKAGED
-    logging.debug(f"Using config path: {config_path}")
-
-    if not os.path.exists(config_path):
-        logging.error(f"Configuration file {config_path} not found.")
+    if os.path.exists(config_path_local):
+        config_path = config_path_local
+    elif os.path.exists(config_path_packaged):
+        config_path = config_path_packaged
+    else:
+        logging.error(f"Configuration file {config_file_path} not found.")
         return {}
 
-    ensure_key_exists()
+    logging.debug(f"Using config path: {config_path}")
+
     with open(config_path, 'r') as f:
         config = json.load(f)
 
-    # Déchiffrer les valeurs sensibles
-    try:
-        if config['LINKEDIN_PASSWORD'] != "":
-            logging.debug(f"Encrypted password from config {config['LINKEDIN_PASSWORD']}")
-            config['LINKEDIN_PASSWORD'] = decrypt_message(config['LINKEDIN_PASSWORD'])
-    except Exception as e:
-        logging.error(f"Failed to decrypt LINKEDIN_PASSWORD: {e}")
-        config['LINKEDIN_PASSWORD'] = ""
+    # Si on charge le fichier user_config.json, déchiffrer les valeurs sensibles
+    if 'user_config.json' in config_file_path:
+        # Déchiffrer le mot de passe LinkedIn
+        try:
+            if config.get('LINKEDIN_PASSWORD'):
+                logging.debug("Decrypting LinkedIn password")
+                config['LINKEDIN_PASSWORD'] = decrypt_linkedin_password(config['LINKEDIN_PASSWORD'])
+        except Exception as e:
+            logging.error(f"Failed to decrypt LINKEDIN_PASSWORD: {e}")
+            config['LINKEDIN_PASSWORD'] = ""
+
+        # Déchiffrer la clé de licence
+        try:
+            if config.get('LICENSE_KEY'):
+                logging.debug("Decrypting LICENSE_KEY")
+                config['LICENSE_KEY'] = decrypt_license_key(config['LICENSE_KEY'])
+        except Exception as e:
+            logging.error(f"Failed to decrypt LICENSE_KEY: {e}")
+            config['LICENSE_KEY'] = ""
 
     return config
 
+def update_config(new_config):
+    # Toujours mettre à jour le fichier user_config.json
+    config_file_path = 'config/user_config.json'
 
-def update_config(config):
-    # TODO path vers secret key non utilisé
-    # key_path = KEY_FILE_PATH_LOCAL if os.path.exists(KEY_FILE_PATH_LOCAL) else KEY_FILE_PATH_PACKAGED
-    config_path = CONFIG_FILE_PATH_LOCAL if os.path.exists(CONFIG_FILE_PATH_LOCAL) else CONFIG_FILE_PATH_PACKAGED
+    config = load_config(config_file_path)
+    config.update(new_config)
 
-    ensure_key_exists()
-    if config['LINKEDIN_PASSWORD'] != "":
-        config['LINKEDIN_PASSWORD'] = encrypt_message(config['LINKEDIN_PASSWORD'])
+    # Chiffrer le mot de passe LinkedIn
+    try:
+        if config.get('LINKEDIN_PASSWORD'):
+            logging.debug("Encrypting LinkedIn password")
+            config['LINKEDIN_PASSWORD'] = encrypt_linkedin_password(config['LINKEDIN_PASSWORD'])
+    except Exception as e:
+        logging.error(f"Failed to encrypt LINKEDIN_PASSWORD: {e}")
+        config['LINKEDIN_PASSWORD'] = ""
 
-    with open(config_path, 'w') as f:
+    # Chiffrer la clé de licence
+    try:
+        if config.get('LICENSE_KEY'):
+            logging.debug("Encrypting LICENSE_KEY")
+            config['LICENSE_KEY'] = encrypt_license_key(config['LICENSE_KEY'])
+    except Exception as e:
+        logging.error(f"Failed to encrypt LICENSE_KEY: {e}")
+        config['LICENSE_KEY'] = ""
+
+    # S'assurer que le dossier de configuration existe
+    os.makedirs(os.path.dirname(config_file_path), exist_ok=True)
+
+    # Enregistrer la configuration mise à jour
+    with open(config_file_path, 'w') as f:
         json.dump(config, f, indent=4)
-    logging.debug(f"Configuration in JSON file updated at {config_path}")
+    logging.debug(f"Configuration in JSON file updated at {config_file_path}")

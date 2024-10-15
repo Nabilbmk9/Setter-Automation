@@ -159,14 +159,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.messages_per_day_label)
         layout.addWidget(self.messages_per_day_input)
 
-        # Champs de saisie pour la clé de licence
-        self.license_key_label = QLabel("Clé de licence:")
-        self.license_key_label.setFont(montserrat)
-        self.license_key_input = QLineEdit(self.config.get('LICENSE_KEY', ''))
-        self.license_key_input.setFont(montserrat)
-        layout.addWidget(self.license_key_label)
-        layout.addWidget(self.license_key_input)
-
         # Bouton pour démarrer le bot
         self.start_button = QPushButton("Start Bot")
         self.start_button.setFont(montserrat)
@@ -201,14 +193,6 @@ class MainWindow(QMainWindow):
             self.message_b_text = dialog.get_text()
             self.message_b_button.setText(self.get_message_preview(self.message_b_text))
 
-    def verify_license(self, license_key):
-        """Vérifie la validité de la clé de licence."""
-        response = post(
-            'https://licences-gen-bot.ew.r.appspot.com/verify_license',
-            json={"license_key": license_key}
-        )
-        return response.json().get('valid', False)
-
     def start_bot(self):
         """Démarre le bot après avoir effectué toutes les vérifications."""
         logging.debug("Start Bot button clicked")
@@ -219,9 +203,8 @@ class MainWindow(QMainWindow):
         message_a = self.message_a_text
         message_b = self.message_b_text
         messages_per_day = self.messages_per_day_input.text()
-        license_key = self.license_key_input.text().replace(" ", "")
 
-        if not all([username, password, search_link, message_a, message_b, messages_per_day, license_key]):
+        if not all([username, password, search_link, message_a, message_b, messages_per_day]):
             QMessageBox.warning(self, "Erreur de saisie", "Tous les champs doivent être remplis !")
             logging.error("Erreur de saisie : Tous les champs doivent être remplis !")
             return
@@ -257,32 +240,22 @@ class MainWindow(QMainWindow):
             logging.error("Erreur de saisie : Le nombre de messages par jour doit être un nombre valide !")
             return
 
-        # Vérifier la licence avant de continuer
-        if not self.verify_license(license_key):
-            QMessageBox.critical(
-                self, "Erreur de licence",
-                "Licence invalide. Veuillez vérifier votre clé de licence."
-            )
-            logging.error("Licence invalide. Fermeture...")
-            return
-
         # Sauvegarder les nouvelles valeurs dans le fichier JSON
         try:
-            logging.debug("Updating configuration with new values")
+            logging.debug("Mise à jour de la configuration avec les nouvelles valeurs")
             self.config.update({
                 'LINKEDIN_EMAIL': username,
                 'LINKEDIN_PASSWORD': password,
                 'LINKEDIN_SEARCH_LINK': search_link,
                 'MESSAGE_A': message_a,
                 'MESSAGE_B': message_b,
-                'MESSAGES_PER_DAY': messages_per_day_int,
-                'LICENSE_KEY': license_key
+                'MESSAGES_PER_DAY': messages_per_day_int
             })
             update_config(self.config)
-            logging.debug("Configuration updated successfully")
+            logging.debug("Configuration mise à jour avec succès")
 
             # Créer une instance du contrôleur principal
-            logging.debug("Creating MainController instance")
+            logging.debug("Création de l'instance MainController")
             self.controller = MainController(
                 username=username,
                 password=password,
@@ -291,7 +264,7 @@ class MainWindow(QMainWindow):
                 message_b=message_b,
                 messages_per_day=messages_per_day_int
             )
-            logging.debug("MainController instance created")
+            logging.debug("Instance MainController créée")
 
             # Vérifier si la limite de messages quotidiens est atteinte
             limit_reached, messages_sent = self.controller.data_manager.has_reached_message_limit(messages_per_day_int)
@@ -300,19 +273,19 @@ class MainWindow(QMainWindow):
                     self, "Limite atteinte",
                     f"Le bot a déjà envoyé le nombre maximum de messages aujourd'hui ({messages_sent}/{messages_per_day_int})."
                 )
-                logging.info("Daily message limit reached, bot will not start.")
+                logging.info("Limite quotidienne de messages atteinte, le bot ne démarrera pas.")
                 return
 
-            logging.debug("Bot started successfully")
+            logging.debug("Bot démarré avec succès")
 
             # Démarrer le bot
             self.controller.run()
-            logging.debug("MainController run() called")
+            logging.debug("Méthode run() de MainController appelée")
             QMessageBox.information(self, "Fin du bot", "Le bot a terminé son exécution.")
 
         except LanguageError as e:
             logging.error(f"Erreur de langue : {e}")
             QMessageBox.warning(self, "Erreur de langue", str(e))
         except Exception as e:
-            logging.error(f"Error running the bot: {e}")
+            logging.error(f"Erreur lors de l'exécution du bot: {e}")
             QMessageBox.critical(self, "Erreur critique", f"Une erreur est survenue : {e}")
