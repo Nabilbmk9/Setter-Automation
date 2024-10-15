@@ -180,9 +180,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def get_message_preview(self, message):
-        """Retourne un aperçu du message (30 premiers caractères)."""
+        """Retourne un aperçu du message (50 premiers caractères)."""
         if message:
-            preview = message[:30] + '...' if len(message) > 30 else message
+            preview = message[:50] + '...' if len(message) > 30 else message
         else:
             preview = "Message vide, cliquez pour remplir"
         return preview
