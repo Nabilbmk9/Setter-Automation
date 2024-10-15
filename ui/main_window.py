@@ -2,7 +2,7 @@ import logging
 from requests import post
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtGui import QFont, QIcon, QColor
 from PySide6.QtWidgets import (
     QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton,
     QMessageBox, QDialog, QTextEdit
@@ -19,24 +19,55 @@ class MessageEditDialog(QDialog):
     def __init__(self, title, initial_text):
         super().__init__()
         self.setWindowTitle(title)
-        self.resize(400, 300)
+        self.resize(400, 350)
+
+        self.max_length = 300
 
         # Zone de texte pour éditer le message
         self.text_edit = QTextEdit()
         self.text_edit.setPlainText(initial_text)
+        self.text_edit.textChanged.connect(self.update_character_count)
+
+        # Label pour le compteur de caractères
+        self.char_count_label = QLabel()
+        self.char_count_label.setAlignment(Qt.AlignRight)
+        self.char_count_label.setFont(QFont("Montserrat", 10))
+        self.update_character_count()  # Initialiser le compteur
 
         # Bouton pour enregistrer le message
-        save_button = QPushButton("Enregistrer")
-        save_button.clicked.connect(self.accept)
+        self.save_button = QPushButton("Enregistrer")
+        self.save_button.clicked.connect(self.accept)
+        self.save_button.setFont(QFont("Montserrat", 10))
 
         # Mise en page de la boîte de dialogue
         layout = QVBoxLayout()
         layout.addWidget(self.text_edit)
-        layout.addWidget(save_button)
+        layout.addWidget(self.char_count_label)
+        layout.addWidget(self.save_button)
         self.setLayout(layout)
+
+    def update_character_count(self):
+        current_length = len(self.text_edit.toPlainText())
+        if current_length > self.max_length:
+            # Si la limite est dépassée, le compteur devient rouge
+            self.char_count_label.setStyleSheet("color: red;")
+        else:
+            # Sinon, le compteur reste de couleur blanche
+            self.char_count_label.setStyleSheet("color: white;")
+
+        self.char_count_label.setText(f"{current_length}/{self.max_length} caractères")
+
+    def accept(self):
+        current_length = len(self.text_edit.toPlainText())
+        if current_length > self.max_length:
+            QMessageBox.warning(self, "Limite dépassée", f"Le message ne doit pas dépasser {self.max_length} caractères.")
+        else:
+            super().accept()
 
     def get_text(self):
         return self.text_edit.toPlainText()
+
+
 
 
 class MainWindow(QMainWindow):
