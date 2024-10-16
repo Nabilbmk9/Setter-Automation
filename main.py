@@ -1,22 +1,22 @@
 # main.py
-import json
+
 import sys
 import logging
-import sqlite3
 import os
+import json
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
-from ui.main_window import MainWindow
+from config.logging_config import setup_logging
+from config.config import load_config, update_config
+from utils.requests_handler import fetch_announcement, check_for_updates
+from utils.license_utils import verify_license
 from ui.announcement_window import AnnouncementWindow
 from ui.license_window import LicenseWindow
 from ui.styles import get_stylesheet
-from utils.requests_handler import fetch_announcement, check_for_updates
-from utils.license_utils import verify_license
-from config.logging_config import setup_logging
-from config.config import load_config, update_config
 from utils.utils import get_resource_path
 
 
 def load_app_config(file_path):
+    """Charge la configuration de l'application depuis un fichier JSON."""
     # Chemin local et chemin empaqueté
     local_full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), file_path)
     packaged_full_path = get_resource_path(f"_internal/{file_path}")
@@ -38,6 +38,7 @@ def load_app_config(file_path):
 
     with open(full_path, 'r') as f:
         return json.load(f)
+
 
 def main():
     # Configurer la journalisation
@@ -117,8 +118,16 @@ def main():
     update_config(user_config)
     logger.debug(f"Type de licence : {license_type}")
 
-    # Créer la fenêtre principale avec le type de licence
-    main_window = MainWindow(license_type=license_type)
+    # Importer la classe appropriée pour la fenêtre principale en fonction du type de licence
+    if license_type == 'premium':
+        from ui.premium_main_window import PremiumMainWindow as MainWindowClass
+        logger.debug("Licence premium détectée, chargement de PremiumMainWindow")
+    else:
+        from ui.standard_main_window import StandardMainWindow as MainWindowClass
+        logger.debug("Licence standard détectée, chargement de StandardMainWindow")
+
+    # Créer la fenêtre principale
+    main_window = MainWindowClass()
     logger.debug("Fenêtre principale créée")
 
     # Afficher la fenêtre d'annonces si nécessaire
@@ -134,6 +143,7 @@ def main():
     logger.debug("Fenêtre principale affichée")
 
     sys.exit(app.exec())
+
 
 if __name__ == '__main__':
     main()
