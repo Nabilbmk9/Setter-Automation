@@ -68,11 +68,10 @@ class MessageEditDialog(QDialog):
         return self.text_edit.toPlainText()
 
 
-
-
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, license_type='standard'):
         super().__init__()
+        self.license_type = license_type
         self.setWindowTitle("Bot LinkedIn")
 
         # Définir l'icône de la fenêtre

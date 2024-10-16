@@ -4,7 +4,7 @@ import sys
 import logging
 import sqlite3
 import os
-from PySide6.QtWidgets import QApplication, QDialog
+from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 from ui.main_window import MainWindow
 from ui.announcement_window import AnnouncementWindow
 from ui.license_window import LicenseWindow
@@ -12,7 +12,7 @@ from ui.styles import get_stylesheet
 from utils.requests_handler import fetch_announcement, check_for_updates
 from utils.license_utils import verify_license
 from config.logging_config import setup_logging
-from config.config import load_config
+from config.config import load_config, update_config
 from utils.utils import get_resource_path
 
 
@@ -59,7 +59,7 @@ def main():
 
     # Charger les configurations de l'application
     try:
-        app_config = load_app_config('config/app_config.json')  # Utilisation de load_app_config
+        app_config = load_app_config('config/app_config.json')
     except Exception as e:
         logger.error(f"Erreur lors du chargement de la configuration de l'application: {e}")
         return
@@ -97,7 +97,9 @@ def main():
 
     # Vérifier la licence
     license_key = user_config.get('LICENSE_KEY', '')
-    if not license_key or not verify_license(license_key):
+    valid, license_type = verify_license(license_key)
+    if not valid:
+        # Demander la saisie de la licence si invalide
         license_window = LicenseWindow()
         if license_window.exec() != QDialog.Accepted:
             sys.exit()  # Quitter l'application si la licence n'est pas validée
@@ -105,9 +107,18 @@ def main():
             # Recharger la configuration pour obtenir la nouvelle clé de licence
             user_config = load_config()
             license_key = user_config.get('LICENSE_KEY', '')
+            valid, license_type = verify_license(license_key)
+            if not valid:
+                QMessageBox.critical(None, "Erreur de licence", "Licence invalide ou expirée.")
+                sys.exit()
 
-    # Créer la fenêtre principale
-    main_window = MainWindow()
+    # Enregistrer le type de licence dans la configuration
+    user_config['LICENSE_TYPE'] = license_type
+    update_config(user_config)
+    logger.debug(f"Type de licence : {license_type}")
+
+    # Créer la fenêtre principale avec le type de licence
+    main_window = MainWindow(license_type=license_type)
     logger.debug("Fenêtre principale créée")
 
     # Afficher la fenêtre d'annonces si nécessaire
