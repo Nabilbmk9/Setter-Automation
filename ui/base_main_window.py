@@ -19,8 +19,9 @@ class BaseMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Bot LinkedIn")
-        self.setWindowIcon(QIcon(get_resource_path("ui/resources/logo3d.png")))
-        self.resize(400, 600)
+
+        # Cette ligne adaptera automatiquement la fenêtre à la taille de l'écran
+        self.showMaximized()
 
         # Initialiser la configuration et la police
         self.config = load_config()
@@ -47,7 +48,6 @@ class BaseMainWindow(QMainWindow):
         self.setup_search_link()
         self.setup_message_templates()
         self.setup_messages_per_day()
-        self.setup_start_button()
 
     def setup_title(self):
         """Configure le titre de l'application."""

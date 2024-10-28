@@ -2,26 +2,13 @@
 
 from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QMessageBox
 from PySide6.QtGui import QFont
-from PySide6.QtCore import Qt
 from config.config import update_config
 import logging
 
-
 class PremiumFeaturesMixin:
     def setup_premium_ui(self):
-        """Configure les éléments de l'interface spécifiques aux fonctionnalités premium."""
+        """Configure les éléments de l'interface spécifiques aux fonctionnalités premium juste après 'Messages par jour'."""
         font = self.font
-
-        # Séparateur
-        separator = QLabel("----------------------------------------------------")
-        separator.setAlignment(Qt.AlignCenter)
-        self.main_layout.addWidget(separator)
-
-        # Label Premium
-        premium_label = QLabel("Fonctionnalités Premium")
-        premium_label.setFont(font)
-        premium_label.setAlignment(Qt.AlignCenter)
-        self.main_layout.addWidget(premium_label)
 
         # Clé API pour OpenAI
         self.api_key_label = QLabel("Clé API OpenAI:")
@@ -40,11 +27,6 @@ class PremiumFeaturesMixin:
         self.main_layout.addWidget(self.prompt_label)
         self.main_layout.addWidget(self.prompt_input)
 
-        # Option pour utiliser ChatGPT
-        # self.use_chatgpt_checkbox = QCheckBox("Utiliser ChatGPT pour les messages personnalisés")
-        # self.use_chatgpt_checkbox.setFont(font)
-        # self.main_layout.addWidget(self.use_chatgpt_checkbox)
-
     def validate_premium_inputs(self):
         """Valide les entrées spécifiques aux fonctionnalités premium."""
         api_key = self.api_key_input.text()
@@ -54,9 +36,7 @@ class PremiumFeaturesMixin:
             QMessageBox.warning(self, "Erreur de saisie", "Veuillez remplir tous les champs premium.")
             return False
 
-        # Optionnellement, valider la clé API avec OpenAI ici
-        # Par exemple, vous pouvez faire une requête test pour vérifier si la clé API est valide
-
+        # Optionnellement, valider la clé API avec OpenAI ici si nécessaire
         return True
 
     def save_premium_configuration(self):
@@ -70,24 +50,21 @@ class PremiumFeaturesMixin:
 
     def run_premium_bot(self):
         """Exécute le bot avec les fonctionnalités premium."""
-        # Ici, vous pouvez surcharger ou étendre la méthode run_bot
-        # Par exemple, vous pouvez utiliser l'API OpenAI pour générer des messages
-        # et les passer au contrôleur
-
-        # Exemple de code placeholder :
+        # Récupérer les configurations premium pour les utiliser dans le bot
         openai_api_key = self.api_key_input.text()
         custom_prompt = self.prompt_input.toPlainText()
 
-        # Générer un message en utilisant l'API OpenAI
+        # Si nécessaire, générer des messages personnalisés avec OpenAI
+        # Exemple de code pour générer un message :
         # generated_message = self.generate_message_with_chatgpt(openai_api_key, custom_prompt)
 
-        # Passer le message généré au contrôleur
+        # Ensuite, passer le message généré au contrôleur
         # self.controller.set_generated_message(generated_message)
 
-        # Puis appeler la méthode run_bot originale
+        # Appeler la méthode run_bot originale
         super().run_bot()
 
-    # Optionnellement, ajoutez des méthodes pour intégrer l'API OpenAI
+    # Méthode pour intégrer OpenAI (exemple)
     # def generate_message_with_chatgpt(self, api_key, prompt):
     #     # Implémentez la logique pour interagir avec l'API OpenAI
     #     pass
