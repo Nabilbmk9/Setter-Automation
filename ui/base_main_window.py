@@ -19,6 +19,7 @@ class BaseMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Bot LinkedIn")
+        self.setWindowIcon(QIcon(get_resource_path("ui/resources/logo3d.png")))
 
         # Cette ligne adaptera automatiquement la fenêtre à la taille de l'écran
         self.showMaximized()
@@ -33,21 +34,17 @@ class BaseMainWindow(QMainWindow):
         self.main_layout.setContentsMargins(20, 20, 20, 20)
         self.main_layout.setSpacing(10)
 
-        # Configurer les composants de l'UI
-        self.setup_ui()
-
         # Définir le widget central
         container = QWidget()
         container.setLayout(self.main_layout)
         self.setCentralWidget(container)
 
+        # Configurer les composants de l'UI
+        self.setup_ui()
+
     def setup_ui(self):
-        """Configure l'interface utilisateur en appelant des méthodes de configuration spécifiques."""
-        self.setup_title()
-        self.setup_linkedin_credentials()
-        self.setup_search_link()
-        self.setup_message_templates()
-        self.setup_messages_per_day()
+        """Méthode vide à surcharger dans les classes dérivées."""
+        pass
 
     def setup_title(self):
         """Configure le titre de l'application."""
