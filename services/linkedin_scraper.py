@@ -59,16 +59,14 @@ class LinkedInScraper:
                 logger.info("Bouton 'Se connecter' cliqué dans le menu déroulant")
                 self._click_add_note_button()
 
-    def enter_custom_message(self, first_name, message_template):
-        """Remplace {first_name} dans le message et l'écrit dans le textarea."""
-        custom_message = message_template.replace("{first_name}", first_name)
+    def enter_custom_message(self, message):
+        """Écrit le message généré dans le champ de texte."""
         try:
-            self.page.wait_for_selector('textarea[name="message"]',
-                                        timeout=5000)  # Attendre que le textarea soit visible
+            self.page.wait_for_selector('textarea[name="message"]', timeout=5000)
             message_textarea = self.page.query_selector('textarea[name="message"]')
             if message_textarea:
-                message_textarea.fill(custom_message)
-                logger.info(f"Message personnalisé écrit pour {first_name}")
+                message_textarea.fill(message)
+                logger.info("Message personnalisé écrit")
                 self._click_send_invitation_button()
             else:
                 logger.error("Textarea non trouvé")
@@ -92,7 +90,7 @@ class LinkedInScraper:
             profile_details = {
                 "title": self._scrape_title(),
                 "info": self._scrape_info(),
-                # "experience": self._scrape_experience()
+                "experience": self._scrape_experience()
             }
             return profile_details
 
@@ -132,18 +130,25 @@ class LinkedInScraper:
     # TODO revoir toute la fonction
     def _scrape_experience(self):
         try:
+            # Sélectionner les sections d'expérience
             experience_sections = self.page.query_selector_all('section:has(div#experience) ul li')
             experiences = []
 
-            for item in experience_sections[:2]:  # Limité aux 2 premières expériences
+            for item in experience_sections:
+                # Extraire les informations de base pour l'expérience principale
                 experience = {
                     'title': self._extract_experience_title(item),
-                    # 'company': self._extract_experience_company(item),
-                    # 'period': self._extract_experience_period(item),
-                    # 'location': self._extract_experience_location(item),
-                    # 'details': self._extract_experience_details(item),
-                    # 'sub_experiences': self._extract_sub_experiences(item)
+                    'company': self._extract_experience_company(item),
+                    'period': self._extract_experience_period(item),
+                    'location': self._extract_experience_location(item),
+                    'description': self._extract_experience_description(item)
                 }
+                # Vérifier les sous-expériences
+                sub_experiences = self._extract_sub_experiences(item)
+                if sub_experiences:
+                    experience['sub_experiences'] = sub_experiences
+
+                # Ajouter à la liste des expériences
                 experiences.append(experience)
 
             return experiences if experiences else "Non spécifié"
@@ -153,32 +158,71 @@ class LinkedInScraper:
 
     def _extract_experience_title(self, item):
         try:
-            t_bold_element = item.query_selector('.t-bold')
-            if t_bold_element:
-                visually_hidden_element = t_bold_element.query_selector('.visually-hidden')
-
-                if visually_hidden_element:
-                    return visually_hidden_element.inner_text().strip()
-
-            return "Non spécifié"
+            # Rechercher le titre du poste
+            title_element = item.query_selector('.t-bold') or item.query_selector('.hoverable-link-text')
+            return title_element.inner_text().strip() if title_element else "Non spécifié"
         except Exception as e:
             logger.error(f"Erreur lors de la récupération du titre : {e}")
             return "Non spécifié"
 
     def _extract_experience_company(self, item):
-        pass
+        try:
+            # Rechercher le nom de l'entreprise
+            company_element = item.query_selector('.t-14.t-normal') or item.query_selector('.hoverable-link-text')
+            return company_element.inner_text().strip() if company_element else "Non spécifié"
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération de l'entreprise : {e}")
+            return "Non spécifié"
 
     def _extract_experience_period(self, item):
-        pass
+        try:
+            # Rechercher la période de travail
+            period_element = item.query_selector('.t-14.t-normal.t-black--light') or item.query_selector(
+                '.pvs-entity__caption-wrapper')
+            return period_element.inner_text().strip() if period_element else "Non spécifié"
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération de la période : {e}")
+            return "Non spécifié"
 
     def _extract_experience_location(self, item):
-        pass
+        try:
+            # Rechercher le lieu de l'expérience
+            location_element = item.query_selector('.t-14.t-normal.t-black--light')
+            return location_element.inner_text().strip() if location_element else "Non spécifié"
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération du lieu : {e}")
+            return "Non spécifié"
 
-    def _extract_experience_details(self, item):
-        pass
+    def _extract_experience_description(self, item):
+        try:
+            # Rechercher la description de l'expérience
+            description_element = item.query_selector('.t-14.t-normal.t-black') or item.query_selector(
+                '.display-flex.t-14')
+            return description_element.inner_text().strip() if description_element else "Non spécifié"
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération de la description : {e}")
+            return "Non spécifié"
 
     def _extract_sub_experiences(self, item):
-        pass
+        try:
+            # Rechercher les sous-expériences
+            sub_experience_elements = item.query_selector_all('.pvs-entity__sub-components li')
+            sub_experiences = []
+
+            for sub_item in sub_experience_elements:
+                sub_experience = {
+                    'title': self._extract_experience_title(sub_item),
+                    'company': self._extract_experience_company(sub_item),
+                    'period': self._extract_experience_period(sub_item),
+                    'location': self._extract_experience_location(sub_item),
+                    'description': self._extract_experience_description(sub_item)
+                }
+                sub_experiences.append(sub_experience)
+
+            return sub_experiences if sub_experiences else None
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération des sous-expériences : {e}")
+            return None
 
     def _check_for_email_verification_pin(self):
         try:

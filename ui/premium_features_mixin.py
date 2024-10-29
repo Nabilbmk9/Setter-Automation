@@ -7,6 +7,8 @@ import logging
 
 from controllers.main_controller import MainController
 from services.chatgpt_manager import ChatGPTManager
+from openai import OpenAIError
+
 
 
 class PremiumFeaturesMixin:
@@ -92,12 +94,13 @@ class PremiumFeaturesMixin:
 
             if not api_key or not custom_prompt:
                 QMessageBox.warning(self, "Erreur de saisie", "Veuillez remplir tous les champs pour ChatGPT.")
+                logging.error("Erreur de saisie : Les champs Clé API et Prompt doivent être remplis pour ChatGPT.")
                 return False
 
             # Validation de la clé API avec OpenAI
-            chatgpt_manager = ChatGPTManager(api_key=api_key)
-            if not chatgpt_manager.validate_api_key():
+            if not ChatGPTManager.validate_api_key(api_key):
                 QMessageBox.critical(self, "Clé API invalide", "La clé API fournie est invalide. Veuillez vérifier.")
+                logging.error("Validation échouée : Clé API invalide.")
                 return False
 
         return True
@@ -125,8 +128,8 @@ class PremiumFeaturesMixin:
             openai_api_key = self.api_key_input.text()
             custom_prompt = self.prompt_input.toPlainText()
 
-            # Créer une instance de ChatGPTManager
-            self.chatgpt_manager = ChatGPTManager(api_key=openai_api_key, prompt=custom_prompt)
+            # Créer une instance de ChatGPTManager avec les deux paramètres
+            self.chatgpt_manager = ChatGPTManager(api_key=openai_api_key, prompt_template=custom_prompt)
 
             # Créer le contrôleur avec le chatgpt_manager
             self.controller = MainController(
@@ -134,7 +137,8 @@ class PremiumFeaturesMixin:
                 password=self.password_input.text(),
                 search_link=self.search_link_input.text(),
                 messages_per_day=self.messages_per_day_int,
-                chatgpt_manager=self.chatgpt_manager
+                chatgpt_manager=self.chatgpt_manager,
+                message_type='chatgpt'
             )
         else:
             # Créer le contrôleur avec les messages Template A et B
@@ -144,7 +148,8 @@ class PremiumFeaturesMixin:
                 search_link=self.search_link_input.text(),
                 message_a=self.message_a_text,
                 message_b=self.message_b_text,
-                messages_per_day=self.messages_per_day_int
+                messages_per_day=self.messages_per_day_int,
+                message_type='normal'
             )
 
         # Vérifier si la limite quotidienne de messages est atteinte
