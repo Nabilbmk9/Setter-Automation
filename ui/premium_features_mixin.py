@@ -92,10 +92,14 @@ class PremiumFeaturesMixin:
 
             if not api_key or not custom_prompt:
                 QMessageBox.warning(self, "Erreur de saisie", "Veuillez remplir tous les champs pour ChatGPT.")
-                logging.error("Erreur de saisie : Les champs Clé API et Prompt doivent être remplis pour ChatGPT.")
                 return False
 
-            # Optionnellement, valider la clé API avec OpenAI ici si nécessaire
+            # Validation de la clé API avec OpenAI
+            chatgpt_manager = ChatGPTManager(api_key=api_key)
+            if not chatgpt_manager.validate_api_key():
+                QMessageBox.critical(self, "Clé API invalide", "La clé API fournie est invalide. Veuillez vérifier.")
+                return False
+
         return True
 
     def save_premium_configuration(self):
