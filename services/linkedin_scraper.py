@@ -26,8 +26,11 @@ class LinkedInScraper:
         logger.info("Login effectué")
 
     def ensure_authenticated(self):
-        while self._check_for_email_verification_pin():
-            self.page.wait_for_timeout(10000)
+        # Boucle pour vérifier les différents types de vérification
+        while self._check_for_email_verification_pin() or self._check_for_verification_page() or self._check_for_captcha_challenge():
+            logger.info("En attente que l'utilisateur résolve la vérification manuelle ou entre un code PIN...")
+            # Mettre en pause pour permettre à l'utilisateur de résoudre la vérification manuellement
+            self.page.wait_for_timeout(10000)  # Pause de 10 secondes entre chaque vérification
         logger.info("Authentification vérifiée")
 
     def get_all_profiles_on_page(self):
@@ -230,6 +233,37 @@ class LinkedInScraper:
             logger.info("Page d'authentification détectée avec ID. En attente du code de vérification.")
             return True
         except:
+            return False
+
+    def _check_for_verification_page(self):
+        """Vérifie si la page de demande de vérification est présente et clique sur 'Vérifier'."""
+        try:
+            # Vérifier si le texte "Vérification" est présent sur la page
+            verification_element = self.page.query_selector('h2#home_children_heading')
+            if verification_element and verification_element.inner_text() == "Vérification":
+                logger.info("Page de vérification détectée. Tentative de clic sur 'Vérifier'.")
+                # Cliquer sur le bouton "Vérifier"
+                verify_button = self.page.query_selector('#home_children_button')
+                if verify_button:
+                    verify_button.click()
+                    logger.info("Bouton 'Vérifier' cliqué.")
+                    return True
+            return False
+        except Exception as e:
+            logger.error(f"Erreur lors de la vérification de la page 'Vérifier' : {e}")
+            return False
+
+    def _check_for_captcha_challenge(self):
+        """Vérifie si le captcha ou l'énigme est présent dans un iframe."""
+        try:
+            # Vérifier si l'iframe du captcha est présente
+            captcha_iframe = self.page.query_selector('#captcha-internal')
+            if captcha_iframe:
+                logger.info("Iframe captcha détectée. En attente de la résolution du captcha.")
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Erreur lors de la vérification du captcha : {e}")
             return False
 
     def _fetch_profiles_list(self):
