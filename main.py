@@ -119,7 +119,10 @@ def main():
     logger.debug(f"Type de licence : {license_type}")
 
     # Importer la classe appropriée pour la fenêtre principale en fonction du type de licence
-    if license_type == 'premium':
+    if license_type == 'ultimate':
+        from ui.ultimate_main_window import UltimateMainWindow as MainWindowClass
+        logger.debug("Licence ultimate détectée, chargement de UltimateMainWindow")
+    elif license_type == 'premium':
         from ui.premium_main_window import PremiumMainWindow as MainWindowClass
         logger.debug("Licence premium détectée, chargement de PremiumMainWindow")
     else:

@@ -27,8 +27,9 @@ class PremiumMainWindow(PremiumFeaturesMixin, BaseMainWindow):
         # Ajouter les éléments premium (clé API, prompt)
         self.setup_premium_ui()
 
-        # Ajouter le bouton 'Start Bot' tout en bas
-        self.setup_start_button()
+        # Si ce n'est pas un utilisateur Ultimate, ajouter le bouton 'Start Bot'
+        if self.config.get('LICENSE_TYPE') != 'ultimate':
+            self.setup_start_button()
 
     def start_bot(self):
         """Démarre le bot avec les fonctionnalités premium."""
