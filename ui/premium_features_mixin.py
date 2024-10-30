@@ -30,6 +30,16 @@ class PremiumFeaturesMixin:
         self.chatgpt_message_radio.setFont(font)
         self.main_layout.addWidget(self.chatgpt_message_radio)
 
+        # Lire le type de message dans la configuration et ajuster le bouton sélectionné
+        message_type = self.config.get('MESSAGE_TYPE', 'normal')  # 'normal' par défaut
+        analyse_profil = self.config.get('ANALYZE_PROFILES', 'false')
+        if message_type == 'normal':
+            self.normal_message_radio.setChecked(True)
+        else:
+            self.chatgpt_message_radio.setChecked(True)
+
+
+
         # Connecter les signaux pour afficher/masquer les champs correspondants
         self.normal_message_radio.toggled.connect(self.toggle_message_fields)
         self.chatgpt_message_radio.toggled.connect(self.toggle_message_fields)
@@ -60,6 +70,11 @@ class PremiumFeaturesMixin:
         self.analyze_profiles_checkbox.setFont(font)
         self.analyze_profiles_checkbox.stateChanged.connect(self.toggle_relevance_prompt)
         self.main_layout.addWidget(self.analyze_profiles_checkbox)
+
+        # Lire la configuration pour activer ou désactiver la case à cocher
+        analyze_profiles = self.config.get('ANALYZE_PROFILES', False)
+        if analyze_profiles:
+            self.analyze_profiles_checkbox.setChecked(True)
 
         # Prompt pour l'analyse des profils (caché par défaut)
         self.relevance_prompt_label = QLabel("Prompt pour l'analyse des profils:")
