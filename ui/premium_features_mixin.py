@@ -132,12 +132,17 @@ class PremiumFeaturesMixin:
 
     def toggle_relevance_prompt(self):
         """Afficher ou masquer le prompt d'analyse de profil en fonction de la case à cocher."""
-        if self.analyze_profiles_checkbox.isChecked():
-            self.relevance_prompt_label.show()
-            self.relevance_prompt_input.show()
+        # Vérifier si les attributs sont initialisés avant de les utiliser
+        if hasattr(self, 'relevance_prompt_label') and hasattr(self, 'relevance_prompt_input'):
+            if self.analyze_profiles_checkbox.isChecked():
+                self.relevance_prompt_label.show()
+                self.relevance_prompt_input.show()
+            else:
+                self.relevance_prompt_label.hide()
+                self.relevance_prompt_input.hide()
         else:
-            self.relevance_prompt_label.hide()
-            self.relevance_prompt_input.hide()
+            logging.error(
+                "Les composants relevance_prompt_label ou relevance_prompt_input ne sont pas encore initialisés.")
 
     def validate_premium_inputs(self):
         """Valide les entrées spécifiques aux fonctionnalités premium."""
