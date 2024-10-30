@@ -62,8 +62,6 @@ class BaseMainWindow(QMainWindow):
         self.username_label.setFont(self.font)
         self.username_input = QLineEdit(self.config.get('LINKEDIN_EMAIL', ''))
         self.username_input.setFont(self.font)
-        self.main_layout.addWidget(self.username_label)
-        self.main_layout.addWidget(self.username_input)
 
         # Mot de passe
         self.password_label = QLabel("Mot de passe LinkedIn:")
@@ -71,8 +69,6 @@ class BaseMainWindow(QMainWindow):
         self.password_input = QLineEdit(self.config.get('LINKEDIN_PASSWORD', ''))
         self.password_input.setEchoMode(QLineEdit.Password)
         self.password_input.setFont(self.font)
-        self.main_layout.addWidget(self.password_label)
-        self.main_layout.addWidget(self.password_input)
 
     def setup_search_link(self):
         """Configure le champ pour le lien de recherche."""
