@@ -30,18 +30,40 @@ def get_stylesheet():
             width: 16px;
             height: 16px;
         }
-        
+
         QRadioButton::indicator::unchecked {
             border: 2px solid #7a3ef3;
             background-color: transparent;
             border-radius: 8px;
         }
-        
+
         QRadioButton::indicator::checked {
             border: 2px solid #7a3ef3;
             background-color: #7a3ef3;
             border-radius: 8px;
         }
+
+        /* Style pour QCheckBox pour basculer l'analyse des profils */
+        QCheckBox {
+            color: white;
+            font-size: 12px;
+            spacing: 6px;
+        }
+        QCheckBox::indicator {
+            width: 16px;
+            height: 16px;
+        }
+        QCheckBox::indicator:unchecked {
+            border: 2px solid #7a3ef3;
+            background-color: transparent;
+            border-radius: 8px;
+        }
+        QCheckBox::indicator:checked {
+            border: 2px solid #7a3ef3;
+            background-color: #7a3ef3;
+            border-radius: 8px;
+        }
+
         /* Style pour les boutons des messages */
         QPushButton#messageButton {
             background-color: #243672;  /* Même couleur que QLineEdit */

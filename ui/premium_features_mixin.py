@@ -1,6 +1,6 @@
 # premium_features_mixin.py
 
-from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QMessageBox, QRadioButton
+from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QMessageBox, QRadioButton, QCheckBox
 from PySide6.QtGui import QFont
 from config.config import update_config
 import logging
@@ -8,7 +8,6 @@ import logging
 from controllers.main_controller import MainController
 from services.chatgpt_manager import ChatGPTManager
 from openai import OpenAIError
-
 
 
 class PremiumFeaturesMixin:
@@ -48,13 +47,31 @@ class PremiumFeaturesMixin:
         self.main_layout.addWidget(self.api_key_label)
         self.main_layout.addWidget(self.api_key_input)
 
-        # Prompt personnalisé
-        self.prompt_label = QLabel("Prompt personnalisé:")
+        # Prompt personnalisé pour les messages
+        self.prompt_label = QLabel("Prompt personnalisé pour les messages:")
         self.prompt_label.setFont(font)
         self.prompt_input = QTextEdit(self.config.get('CUSTOM_PROMPT', ''))
         self.prompt_input.setFont(font)
         self.main_layout.addWidget(self.prompt_label)
         self.main_layout.addWidget(self.prompt_input)
+
+        # Option pour activer/désactiver l'analyse de profil
+        self.analyze_profiles_checkbox = QCheckBox("Analyser les profils avant d'envoyer les messages")
+        self.analyze_profiles_checkbox.setFont(font)
+        self.analyze_profiles_checkbox.stateChanged.connect(self.toggle_relevance_prompt)
+        self.main_layout.addWidget(self.analyze_profiles_checkbox)
+
+        # Prompt pour l'analyse des profils (caché par défaut)
+        self.relevance_prompt_label = QLabel("Prompt pour l'analyse des profils:")
+        self.relevance_prompt_label.setFont(font)
+        self.relevance_prompt_input = QTextEdit(self.config.get('RELEVANCE_PROMPT', ''))
+        self.relevance_prompt_input.setFont(font)
+        self.main_layout.addWidget(self.relevance_prompt_label)
+        self.main_layout.addWidget(self.relevance_prompt_input)
+
+        # Masquer le prompt d'analyse de profil par défaut
+        self.relevance_prompt_label.hide()
+        self.relevance_prompt_input.hide()
 
         # Au démarrage, afficher/masquer les champs en fonction du bouton sélectionné
         self.toggle_message_fields()
@@ -73,6 +90,9 @@ class PremiumFeaturesMixin:
             self.api_key_input.hide()
             self.prompt_label.hide()
             self.prompt_input.hide()
+            self.analyze_profiles_checkbox.hide()
+            self.relevance_prompt_label.hide()
+            self.relevance_prompt_input.hide()
         else:
             # Masquer les messages Template A et B
             self.message_a_label.hide()
@@ -85,6 +105,24 @@ class PremiumFeaturesMixin:
             self.api_key_input.show()
             self.prompt_label.show()
             self.prompt_input.show()
+            self.analyze_profiles_checkbox.show()
+
+            # Vérifier l'état de la case à cocher pour l'analyse de profil
+            if self.analyze_profiles_checkbox.isChecked():
+                self.relevance_prompt_label.show()
+                self.relevance_prompt_input.show()
+            else:
+                self.relevance_prompt_label.hide()
+                self.relevance_prompt_input.hide()
+
+    def toggle_relevance_prompt(self):
+        """Afficher ou masquer le prompt d'analyse de profil en fonction de la case à cocher."""
+        if self.analyze_profiles_checkbox.isChecked():
+            self.relevance_prompt_label.show()
+            self.relevance_prompt_input.show()
+        else:
+            self.relevance_prompt_label.hide()
+            self.relevance_prompt_input.hide()
 
     def validate_premium_inputs(self):
         """Valide les entrées spécifiques aux fonctionnalités premium."""
@@ -96,6 +134,14 @@ class PremiumFeaturesMixin:
                 QMessageBox.warning(self, "Erreur de saisie", "Veuillez remplir tous les champs pour ChatGPT.")
                 logging.error("Erreur de saisie : Les champs Clé API et Prompt doivent être remplis pour ChatGPT.")
                 return False
+
+            # Si l'analyse de profil est activée, vérifier que le prompt d'analyse est fourni
+            if self.analyze_profiles_checkbox.isChecked():
+                relevance_prompt = self.relevance_prompt_input.toPlainText()
+                if not relevance_prompt:
+                    QMessageBox.warning(self, "Erreur de saisie", "Veuillez remplir le prompt pour l'analyse des profils.")
+                    logging.error("Erreur de saisie : Le prompt d'analyse des profils doit être rempli.")
+                    return False
 
             # Validation de la clé API avec OpenAI
             if not ChatGPTManager.validate_api_key(api_key):
@@ -113,10 +159,15 @@ class PremiumFeaturesMixin:
         else:
             message_type = 'chatgpt'
 
+        # Enregistrer si l'analyse de profil est activée
+        analyze_profiles = self.analyze_profiles_checkbox.isChecked()
+
         self.config.update({
             'MESSAGE_TYPE': message_type,
             'OPENAI_API_KEY': self.api_key_input.text(),
-            'CUSTOM_PROMPT': self.prompt_input.toPlainText()
+            'CUSTOM_PROMPT': self.prompt_input.toPlainText(),
+            'ANALYZE_PROFILES': analyze_profiles,
+            'RELEVANCE_PROMPT': self.relevance_prompt_input.toPlainText()
         })
         update_config(self.config)
         logging.debug("Configuration premium mise à jour avec succès")
@@ -128,17 +179,26 @@ class PremiumFeaturesMixin:
             openai_api_key = self.api_key_input.text()
             custom_prompt = self.prompt_input.toPlainText()
 
-            # Créer une instance de ChatGPTManager avec les deux paramètres
-            self.chatgpt_manager = ChatGPTManager(api_key=openai_api_key, prompt_template=custom_prompt)
+            # Vérifier si l'analyse de profil est activée
+            analyze_profiles = self.analyze_profiles_checkbox.isChecked()
+            relevance_prompt = self.relevance_prompt_input.toPlainText() if analyze_profiles else None
 
-            # Créer le contrôleur avec le chatgpt_manager
+            # Créer une instance de ChatGPTManager avec les paramètres appropriés
+            self.chatgpt_manager = ChatGPTManager(
+                api_key=openai_api_key,
+                prompt_template=custom_prompt,
+                relevance_prompt_template=relevance_prompt
+            )
+
+            # Créer le contrôleur avec le chatgpt_manager et l'option analyze_profiles
             self.controller = MainController(
                 username=self.username_input.text(),
                 password=self.password_input.text(),
                 search_link=self.search_link_input.text(),
                 messages_per_day=self.messages_per_day_int,
                 chatgpt_manager=self.chatgpt_manager,
-                message_type='chatgpt'
+                message_type='chatgpt',
+                analyze_profiles=analyze_profiles  # Passer l'option au contrôleur
             )
         else:
             # Créer le contrôleur avec les messages Template A et B
@@ -151,6 +211,8 @@ class PremiumFeaturesMixin:
                 messages_per_day=self.messages_per_day_int,
                 message_type='normal'
             )
+
+        # ... reste du code ...
 
         # Vérifier si la limite quotidienne de messages est atteinte
         limit_reached, messages_sent = self.controller.data_manager.has_reached_message_limit(self.messages_per_day_int)

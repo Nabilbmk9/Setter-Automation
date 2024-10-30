@@ -12,7 +12,7 @@ from utils.utils import extract_keywords_from_search_link, get_next_message
 class MainController:
     def __init__(
         self, username, password, search_link, messages_per_day,
-        message_a=None, message_b=None, chatgpt_manager=None, message_type='normal'
+        message_a=None, message_b=None, chatgpt_manager=None, message_type='normal', analyze_profiles=False
     ):
         logging.info("Initializing MainController")
         self.browser_manager = None
@@ -24,6 +24,7 @@ class MainController:
         self.message_b = message_b
         self.chatgpt_manager = chatgpt_manager
         self.message_type = message_type
+        self.analyze_profiles = analyze_profiles  # Stocker le paramètre
         self.scraper = None
         self.data_manager = DataManager(db_path='linkedin_contacts.db')
         self.message_toggle = False  # Pour alterner entre les messages
@@ -96,6 +97,26 @@ class MainController:
                         'position': profile.get('position', '')
                     }
 
+                    # **Nouvelle étape : Analyser le profil si l'option est activée**
+                    if self.analyze_profiles:
+                        if not self.chatgpt_manager:
+                            logging.error("ChatGPTManager n'est pas initialisé.")
+                            continue
+                        try:
+                            # Appeler la méthode pour évaluer la pertinence du profil
+                            decision = self.chatgpt_manager.evaluate_profile_relevance(profile_data)
+                            if decision is None:
+                                logging.error("Impossible d'évaluer le profil, passage au suivant.")
+                                continue
+                            elif "oui" in decision.lower():
+                                logging.info("Profil pertinent, envoi du message.")
+                            else:
+                                logging.info("Profil non pertinent, passage au suivant.")
+                                continue  # Passer au profil suivant
+                        except Exception as e:
+                            logging.error(f"Erreur lors de l'évaluation du profil pour {linkedin_profile_link}: {e}")
+                            continue
+
                     # Générer le message en fonction du type de message
                     try:
                         if self.message_type == 'normal':
@@ -103,17 +124,13 @@ class MainController:
                                 self.message_a, self.message_b, self.message_toggle
                             )
                             # Remplacer les variables dans le message
-                            next_message = next_message.format(**profile_data)
-                            generated_message = next_message
+                            generated_message = next_message.format(**profile_data)
                         elif self.message_type == 'chatgpt':
                             if not self.chatgpt_manager:
                                 logging.error("ChatGPTManager n'est pas initialisé.")
                                 continue
-                            # Remplacer les placeholders dans le prompt
-                            prompt_template = self.chatgpt_manager.prompt_template
-                            formatted_prompt = prompt_template.format(**profile_data)
                             # Générer le message avec ChatGPT
-                            generated_message = self.chatgpt_manager.generate_response(formatted_prompt)
+                            generated_message = self.chatgpt_manager.generate_response(profile_data)
                         else:
                             logging.error(f"Type de message invalide: {self.message_type}")
                             continue
