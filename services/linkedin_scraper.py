@@ -379,6 +379,90 @@ class LinkedInScraper:
                 print(f"Exception occurred while loading messages: {e}")
                 break
 
+    def navigate_to_unread_messages(self):
+        """Navigue vers la page des messages non lus."""
+        self.page.goto("https://www.linkedin.com/messaging/?filter=unread")
+        self.page.wait_for_selector('.msg-conversations-container__conversations-list')
+        logger.info("Navigué vers la page des messages non lus")
+
+    def get_unread_conversations(self):
+        """Récupère la liste des conversations non lues."""
+        unread_conversations = []
+        conversation_items = self.page.query_selector_all(
+            '.msg-conversations-container__convo-item .msg-conversation-card__convo-item-container--unread'
+        )
+
+        for conversation in conversation_items:
+            try:
+                # Extraire le nom et le lien de la conversation
+                participant_name = conversation.query_selector(
+                    '.msg-conversation-listitem__participant-names span.truncate'
+                ).inner_text().strip()
+
+                # Cliquez sur la conversation pour l'ouvrir
+                conversation.click()
+                self.page.wait_for_selector('.msg-s-message-list__event')
+
+                # Extraire l'historique de la conversation
+                conversation_history = self.get_conversation_history()
+
+                # Ajouter les informations de la conversation non lue
+                unread_conversations.append({
+                    'participant_name': participant_name,
+                    'conversation_history': conversation_history
+                })
+
+                logger.info(f"Conversation non lue récupérée pour : {participant_name}")
+            except Exception as e:
+                logger.error(f"Erreur lors de la récupération de la conversation : {e}")
+
+        return unread_conversations
+
+    def get_conversation_history(self):
+        """Récupère l'historique des messages dans une conversation ouverte, avec l'auteur pour chaque message."""
+        messages = []
+
+        # Sélection de tous les éléments de messages dans la conversation
+        message_elements = self.page.query_selector_all('.msg-s-message-list__event')
+
+        for message_element in message_elements:
+            try:
+                # Extraire l'auteur du message
+                author_element = message_element.query_selector('.msg-s-message-group__name')
+                author = author_element.inner_text().strip() if author_element else "Inconnu"
+
+                # Extraire le texte du message
+                text_element = message_element.query_selector('.msg-s-event-listitem__body')
+                text = text_element.inner_text().strip() if text_element else ""
+
+                # Vérification et ajout de chaque message avec son auteur dans la liste
+                if text:  # Ignorer les messages vides
+                    messages.append({"author": author, "message": text})
+
+            except Exception as e:
+                logger.error(f"Erreur lors de l'extraction du message : {e}")
+
+        return messages
+
+    def send_reply(self, reply_message):
+        """Envoie un message de réponse dans la conversation ouverte."""
+        try:
+            # Sélectionner le champ de texte pour écrire le message
+            message_box = self.page.query_selector('textarea.msg-form__contenteditable')
+            if message_box:
+                message_box.fill(reply_message)
+                logger.info("Message de réponse rempli")
+
+                # Cliquer sur le bouton d'envoi
+                send_button = self.page.query_selector('button.msg-form__send-button')
+                if send_button:
+                    send_button.click()
+                    logger.info("Message de réponse envoyé")
+            else:
+                logger.error("Impossible de trouver le champ de message")
+        except Exception as e:
+            logger.error(f"Erreur lors de l'envoi de la réponse : {e}")
+
     """
     Cette fonction doit être appelée avant le login et apres la connexion car la langue peut etre différente entre 
     l'ouverture initiale de LinkedIn et après la connection de l'utilisateur car la langue de la page devient celle du 
