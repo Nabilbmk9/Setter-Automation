@@ -448,7 +448,7 @@ class LinkedInScraper:
         """Envoie un message de réponse dans la conversation ouverte."""
         try:
             # Sélectionner le champ de texte pour écrire le message
-            message_box = self.page.query_selector('textarea.msg-form__contenteditable')
+            message_box = self.page.query_selector('.msg-form__contenteditable')
             if message_box:
                 message_box.fill(reply_message)
                 logger.info("Message de réponse rempli")
