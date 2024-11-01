@@ -380,7 +380,7 @@ class LinkedInScraper:
                 break
 
     def navigate_to_unread_messages(self):
-        """Navigue vers la page des messages non lus."""
+        """Navigue vers la page des messages non lus et recharge si nécessaire."""
         self.page.goto("https://www.linkedin.com/messaging/?filter=unread")
         self.page.wait_for_selector('.msg-conversations-container__conversations-list')
         logger.info("Navigué vers la page des messages non lus")
@@ -462,6 +462,42 @@ class LinkedInScraper:
                 logger.error("Impossible de trouver le champ de message")
         except Exception as e:
             logger.error(f"Erreur lors de l'envoi de la réponse : {e}")
+
+    def get_first_unread_conversation(self):
+        """Récupère la première conversation non lue, si elle existe."""
+        try:
+            # Sélectionne le premier élément de la liste des conversations non lues
+            conversation_item = self.page.query_selector(
+                '.msg-conversations-container__convo-item .msg-conversation-card__convo-item-container--unread'
+            )
+
+            if conversation_item:
+                # Extraire le nom du participant
+                participant_name_element = conversation_item.query_selector(
+                    '.msg-conversation-listitem__participant-names span.truncate'
+                )
+                participant_name = participant_name_element.inner_text().strip() if participant_name_element else "Inconnu"
+
+                # Clique sur la conversation pour l'ouvrir
+                conversation_item.click()
+                self.page.wait_for_selector('.msg-s-message-list__event')
+
+                # Extraire l'historique de la conversation
+                conversation_history = self.get_conversation_history()
+
+                logger.info(f"Conversation non lue récupérée pour : {participant_name}")
+                return {
+                    'participant_name': participant_name,
+                    'conversation_history': conversation_history
+                }
+            else:
+                # Aucun message non lu
+                logger.info("Aucune conversation non lue trouvée.")
+                return None
+
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération de la conversation : {e}")
+            return None
 
     """
     Cette fonction doit être appelée avant le login et apres la connexion car la langue peut etre différente entre 

@@ -111,7 +111,7 @@ class ChatGPTManager:
             # Récupérer le dernier message de l'assistant
             for message in reversed(messages.data):
                 if message.role == 'assistant':
-                    return message.content
+                    return message.content[0].text.value
             return None
         except OpenAIError as e:
             logging.error(f"Erreur lors de la récupération de la réponse : {e}")
