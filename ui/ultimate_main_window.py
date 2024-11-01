@@ -303,6 +303,8 @@ class UltimateMainWindow(PremiumMainWindow):
             password=self.password_input.text(),
             search_link=self.search_link_input.text(),
             messages_per_day=self.messages_per_day_int,
+            message_a=self.message_a_text,
+            message_b=self.message_b_text,
             chatgpt_manager=self.chatgpt_manager,
             message_type='chatgpt' if self.chatgpt_message_radio.isChecked() else 'normal',
             analyze_profiles=analyze_profiles,

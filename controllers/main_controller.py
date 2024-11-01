@@ -214,15 +214,15 @@ class MainController:
             logging.error("ChatGPTManager or assistant_id is not initialized.")
             return
 
-        self.scraper.navigate_to_unread_messages()
         no_new_message_count = 0
-        check_interval = 120  # Commence par vérifier toutes les 2 minutes
+        check_interval = 20  # Commence par vérifier toutes les 2 minutes
 
         while True:
+            self.scraper.navigate_to_unread_messages()
             unread_conversations = self.scraper.get_unread_conversations()
 
             if not unread_conversations:
-                logging.info("No new unread messages. Checking again after the interval.")
+                logging.info(f"No new unread messages. Checking again after the interval. ({check_interval} secondes)")
                 no_new_message_count += 1
                 # Augmenter l'intervalle après trois itérations sans nouveau message
                 if no_new_message_count >= 3:
@@ -231,43 +231,44 @@ class MainController:
                 continue  # Recommencer la boucle après l'attente
 
             no_new_message_count = 0  # Réinitialiser si un message est trouvé
-            check_interval = 120  # Revenir à 2 minutes
+            check_interval = 20  # Revenir à 2 minutes
 
-            for conversation in unread_conversations:
-                participant_name = conversation['participant_name']
-                conversation_history = conversation['conversation_history']
+            # Traiter la première conversation seulement
+            conversation = unread_conversations[0]
+            participant_name = conversation['participant_name']
+            conversation_history = conversation['conversation_history']
 
-                # Générer la réponse automatique
-                try:
-                    # Créer un thread et ajouter les messages au thread
-                    thread_id = self.chatgpt_manager.create_thread()
-                    if not thread_id:
-                        logging.error("Échec de la création du thread.")
-                        continue
+            # Générer la réponse automatique
+            try:
+                # Créer un thread et ajouter les messages au thread
+                thread_id = self.chatgpt_manager.create_thread()
+                if not thread_id:
+                    logging.error("Échec de la création du thread.")
+                    continue
 
-                    # Ajouter l'historique de la conversation au thread
-                    for message in conversation_history:
-                        self.chatgpt_manager.add_message_to_thread(thread_id, message['message'])
+                # Ajouter l'historique de la conversation au thread
+                for message in conversation_history:
+                    self.chatgpt_manager.add_message_to_thread(thread_id, message['message'])
 
-                    # Exécuter l'assistant sur le thread
-                    run_id = self.chatgpt_manager.run_assistant(thread_id, self.assistant_id)
-                    if not run_id:
-                        logging.error("Échec de l'exécution de l'assistant.")
-                        continue
+                # Exécuter l'assistant sur le thread
+                run_id = self.chatgpt_manager.run_assistant(thread_id, self.assistant_id)
+                if not run_id:
+                    logging.error("Échec de l'exécution de l'assistant.")
+                    continue
 
-                    # Attendre que l'assistant ait terminé de générer la réponse
-                    time.sleep(5)
+                # Attendre que l'assistant ait terminé de générer la réponse
+                time.sleep(5)
 
-                    # Récupérer la réponse de l'assistant
-                    assistant_response = self.chatgpt_manager.get_assistant_response(thread_id)
-                    if assistant_response:
-                        # Envoyer la réponse sur LinkedIn
-                        self.scraper.send_reply(assistant_response)
-                        logging.info(f"Réponse automatique envoyée à {participant_name}")
-                    else:
-                        logging.error(f"Aucune réponse de l'assistant pour {participant_name}")
-                except Exception as e:
-                    logging.error(f"Erreur lors de la génération de la réponse pour {participant_name}: {e}")
+                # Récupérer la réponse de l'assistant
+                assistant_response = self.chatgpt_manager.get_assistant_response(thread_id)
+                if assistant_response:
+                    # Envoyer la réponse sur LinkedIn
+                    self.scraper.send_reply(assistant_response)
+                    logging.info(f"Réponse automatique envoyée à {participant_name}")
+                else:
+                    logging.error(f"Aucune réponse de l'assistant pour {participant_name}")
+            except Exception as e:
+                logging.error(f"Erreur lors de la génération de la réponse pour {participant_name}: {e}")
 
             # Pause avant de vérifier les nouveaux messages
             time.sleep(check_interval)

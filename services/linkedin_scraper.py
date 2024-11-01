@@ -357,13 +357,14 @@ class LinkedInScraper:
         logger.info("Navigué vers la page des messages non lus")
 
     def get_unread_conversations(self):
-        """Récupère la liste des conversations non lues."""
+        """Récupère la première conversation non lue seulement."""
         unread_conversations = []
         conversation_items = self.page.query_selector_all(
             '.msg-conversations-container__convo-item .msg-conversation-card__convo-item-container--unread'
         )
 
-        for conversation in conversation_items:
+        if conversation_items:
+            conversation = conversation_items[0]  # Ne traiter que la première conversation non lue
             try:
                 # Extraire le nom et le lien de la conversation
                 participant_name = conversation.query_selector(
@@ -383,7 +384,7 @@ class LinkedInScraper:
                     'conversation_history': conversation_history
                 })
 
-                logger.info(f"Conversation non lue récupérée pour : {participant_name}")
+                logger.info(f"Première conversation non lue récupérée pour : {participant_name}")
             except Exception as e:
                 logger.error(f"Erreur lors de la récupération de la conversation : {e}")
 
