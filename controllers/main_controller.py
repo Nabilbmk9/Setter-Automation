@@ -208,7 +208,7 @@ class MainController:
             logging.info(f"Profiles found: {len(profiles)} on page {last_page_visited}")
 
     def handle_auto_replies_sequential(self):
-        """Gère les réponses automatiques aux messages non lus, un par un, avec vérification du contenu complet du thread."""
+        """Gère les réponses automatiques aux messages non lus, avec vérification de la cohérence de la conversation."""
         logging.info("Starting sequential handling of automatic replies")
         if not self.chatgpt_manager or not self.assistant_id:
             logging.error("ChatGPTManager or assistant_id is not initialized.")
@@ -228,7 +228,7 @@ class MainController:
                 if no_new_message_count >= 3:
                     check_interval = 3600  # Vérifier toutes les heures après 3 fois sans nouveau message
                 time.sleep(check_interval)
-                continue  # Recommencer la boucle après l'attente
+                continue
 
             no_new_message_count = 0  # Réinitialiser si un message est trouvé
             check_interval = 20  # Revenir à 2 minutes
@@ -238,9 +238,19 @@ class MainController:
             participant_name = conversation['participant_name']
             conversation_history = conversation['conversation_history']
 
-            # Générer la réponse automatique
+            # Étape de vérification de la pertinence
             try:
-                # Créer un thread et ajouter les messages au thread
+                relevance = self.chatgpt_manager.check_message_relevance(conversation_history)
+                if "non" in relevance :
+                    logging.info(
+                        f"Message de {participant_name} jugé hors sujet par l'assistant, aucune réponse automatique envoyée.")
+                    continue  # Ne pas répondre si le message est jugé hors sujet
+            except Exception as e:
+                logging.error(f"Erreur lors de la vérification de la pertinence pour {participant_name}: {e}")
+                continue
+
+            # Générer la réponse automatique uniquement si la pertinence est confirmée
+            try:
                 thread_id = self.chatgpt_manager.create_thread()
                 if not thread_id:
                     logging.error("Échec de la création du thread.")

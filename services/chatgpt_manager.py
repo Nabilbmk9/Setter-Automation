@@ -53,6 +53,24 @@ class ChatGPTManager:
             logging.error(f"Erreur inattendue lors de l'évaluation du profil : {e}")
             return None
 
+    def check_message_relevance(self, conversation_history):
+        """Vérifie si la conversation est pertinente pour une réponse automatique."""
+        prompt = (
+                "Voici l'historique d'une conversation :\n\n"
+                + "\n".join([f"{msg['author']}: {msg['message']}" for msg in conversation_history])
+                + "\n\nEst ce que la conversation est coherente ?  Répondez uniquement par 'oui' ou 'non' avec une petite explication tres très courte de ton choix."
+        )
+
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return response.choices[0].message.content.strip().lower()  # 'oui' ou 'non'
+        except OpenAIError as e:
+            logging.error(f"Erreur lors de la vérification de la pertinence du message : {e}")
+            return "non"  # Par défaut, renvoyer 'non' en cas d'erreur
+
     @classmethod
     def validate_api_key(cls, api_key):
         """Valide la clé API en faisant un appel test à OpenAI."""
