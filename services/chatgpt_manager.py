@@ -92,6 +92,15 @@ class ChatGPTManager:
             logging.error(f"Erreur lors de l'ajout du message : {e}")
             return None
 
+    def get_thread_content(self, thread_id):
+        """Récupère tout le contenu actuel du thread pour vérification.""" #Ce code est utilisé seulement pour les tests
+        try:
+            messages = self.client.beta.threads.messages.list(thread_id=thread_id)
+            return [msg.content for msg in messages.data if msg.role in ['user', 'assistant']]
+        except OpenAIError as e:
+            logging.error(f"Erreur lors de la récupération du contenu du thread : {e}")
+            return []
+
     def run_assistant(self, thread_id, assistant_id):
         """Exécute l'assistant sur le thread pour obtenir une réponse."""
         try:

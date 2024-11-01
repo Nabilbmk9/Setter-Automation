@@ -207,75 +207,68 @@ class MainController:
             profiles = self.scraper.get_all_profiles_on_page()
             logging.info(f"Profiles found: {len(profiles)} on page {last_page_visited}")
 
-    import time
-
     def handle_auto_replies_sequential(self):
-        """Gère les réponses automatiques aux messages non lus, avec un délai ajustable selon l'arrivée de nouveaux messages."""
-        logging.info("Démarrage de la gestion séquentielle des réponses automatiques")
-
+        """Gère les réponses automatiques aux messages non lus, un par un, avec vérification du contenu complet du thread."""
+        logging.info("Starting sequential handling of automatic replies")
         if not self.chatgpt_manager or not self.assistant_id:
-            logging.error("ChatGPTManager ou assistant_id n'est pas initialisé.")
+            logging.error("ChatGPTManager or assistant_id is not initialized.")
             return
 
-        no_new_message_count = 0  # Compteur de cycles sans nouveau message
-        check_interval = 120  # Délai de vérification en secondes (2 minutes par défaut)
+        self.scraper.navigate_to_unread_messages()
+        no_new_message_count = 0
+        check_interval = 120  # Commence par vérifier toutes les 2 minutes
 
         while True:
-            # Naviguer vers les messages non lus
-            self.scraper.navigate_to_unread_messages()
-            unread_conversation = self.scraper.get_first_unread_conversation()
+            unread_conversations = self.scraper.get_unread_conversations()
 
-            # Si une conversation non lue est trouvée, traiter et répondre
-            if unread_conversation:
-                participant_name = unread_conversation['participant_name']
-                conversation_history = unread_conversation['conversation_history']
+            if not unread_conversations:
+                logging.info("No new unread messages. Checking again after the interval.")
+                no_new_message_count += 1
+                # Augmenter l'intervalle après trois itérations sans nouveau message
+                if no_new_message_count >= 3:
+                    check_interval = 3600  # Vérifier toutes les heures après 3 fois sans nouveau message
+                time.sleep(check_interval)
+                continue  # Recommencer la boucle après l'attente
 
+            no_new_message_count = 0  # Réinitialiser si un message est trouvé
+            check_interval = 120  # Revenir à 2 minutes
+
+            for conversation in unread_conversations:
+                participant_name = conversation['participant_name']
+                conversation_history = conversation['conversation_history']
+
+                # Générer la réponse automatique
                 try:
-                    # Création d'un thread pour la réponse automatique
+                    # Créer un thread et ajouter les messages au thread
                     thread_id = self.chatgpt_manager.create_thread()
                     if not thread_id:
                         logging.error("Échec de la création du thread.")
                         continue
 
-                    # Ajout de l'historique au thread
+                    # Ajouter l'historique de la conversation au thread
                     for message in conversation_history:
                         self.chatgpt_manager.add_message_to_thread(thread_id, message['message'])
 
-                    # Exécuter l'assistant et obtenir une réponse
+                    # Exécuter l'assistant sur le thread
                     run_id = self.chatgpt_manager.run_assistant(thread_id, self.assistant_id)
                     if not run_id:
                         logging.error("Échec de l'exécution de l'assistant.")
                         continue
 
-                    # Attente pour la réponse
-                    time.sleep(5)  # Ajuster selon les besoins
+                    # Attendre que l'assistant ait terminé de générer la réponse
+                    time.sleep(5)
 
-                    # Récupérer la réponse
+                    # Récupérer la réponse de l'assistant
                     assistant_response = self.chatgpt_manager.get_assistant_response(thread_id)
                     if assistant_response:
-                        # Envoi de la réponse sur LinkedIn
+                        # Envoyer la réponse sur LinkedIn
                         self.scraper.send_reply(assistant_response)
                         logging.info(f"Réponse automatique envoyée à {participant_name}")
-
-                        # Réinitialiser le compteur et l'intervalle si un message a été trouvé
-                        no_new_message_count = 0
-                        check_interval = 10  # Revenir à 2 minutes entre chaque vérification
                     else:
                         logging.error(f"Aucune réponse de l'assistant pour {participant_name}")
-
                 except Exception as e:
                     logging.error(f"Erreur lors de la génération de la réponse pour {participant_name}: {e}")
 
-            else:
-                # Pas de nouveau message trouvé
-                no_new_message_count += 1
-                logging.info(f"Aucun nouveau message trouvé ({no_new_message_count} fois de suite).")
-
-                # Si on n'a trouvé aucun message 3 fois, passer à 1 heure entre chaque vérification
-                if no_new_message_count >= 3:
-                    check_interval = 60  # 1 heure
-                    logging.info("Passage à 1 heure entre chaque vérification")
-
-            # Attendre avant la prochaine vérification
+            # Pause avant de vérifier les nouveaux messages
             time.sleep(check_interval)
 

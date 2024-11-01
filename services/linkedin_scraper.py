@@ -403,7 +403,7 @@ class LinkedInScraper:
                 conversation.click()
                 self.page.wait_for_selector('.msg-s-message-list__event')
 
-                # Extraire l'historique de la conversation
+                # Extraire l'historique complet de la conversation en scrollant
                 conversation_history = self.get_conversation_history()
 
                 # Ajouter les informations de la conversation non lue
@@ -419,8 +419,20 @@ class LinkedInScraper:
         return unread_conversations
 
     def get_conversation_history(self):
-        """Récupère l'historique des messages dans une conversation ouverte, avec l'auteur pour chaque message."""
+        """Récupère l'historique complet des messages dans une conversation ouverte."""
         messages = []
+        last_height = 0
+
+        while True:
+            # Scroller vers le haut pour charger les messages précédents
+            self.page.evaluate("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)  # Pause pour permettre le chargement des messages
+
+            # Vérifier la hauteur de défilement pour voir si on a atteint le haut
+            current_height = self.page.evaluate("document.body.scrollHeight")
+            if current_height == last_height:
+                break  # Sortir de la boucle si plus de messages ne se chargent
+            last_height = current_height
 
         # Sélection de tous les éléments de messages dans la conversation
         message_elements = self.page.query_selector_all('.msg-s-message-list__event')
@@ -435,7 +447,7 @@ class LinkedInScraper:
                 text_element = message_element.query_selector('.msg-s-event-listitem__body')
                 text = text_element.inner_text().strip() if text_element else ""
 
-                # Vérification et ajout de chaque message avec son auteur dans la liste
+                # Ajouter chaque message avec son auteur dans la liste
                 if text:  # Ignorer les messages vides
                     messages.append({"author": author, "message": text})
 
