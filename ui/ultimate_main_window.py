@@ -249,11 +249,35 @@ class UltimateMainWindow(PremiumMainWindow):
         update_config(self.config)
         logging.debug("Configuration Ultimate mise à jour avec succès")
 
-    def run_bot(self):
-        """Exécute le bot avec les fonctionnalités Ultimate."""
-        # Vous pouvez surcharger cette méthode pour inclure les fonctionnalités Ultimate
-        # ou appeler la méthode de la classe parent si elle convient
+    def start_bot(self):
+        """Démarre le bot en utilisant les fonctionnalités spécifiques au plan Ultimate."""
+        logging.debug("Start Bot button clicked (Ultimate)")
+
+        # Valider les entrées premium pour le plan Ultimate
+        if self.chatgpt_message_radio.isChecked():
+            if not self.validate_premium_inputs():
+                return
+            # Sauvegarder la configuration premium
+            self.save_premium_configuration()
+        else:
+            # Sauvegarder la configuration pour le type normal
+            self.save_premium_configuration()
+
+        # Valider les entrées de base en tenant compte des spécificités du plan Ultimate
+        if not self.validate_inputs():
+            return
+
+        # Sauvegarder la configuration de base
+        self.save_configuration()
+
+        # Exécuter le bot avec les fonctionnalités Ultimate
         self.run_ultimate_bot()
+
+    # def run_bot(self):
+    #     """Exécute le bot avec les fonctionnalités Ultimate."""
+    #     # Vous pouvez surcharger cette méthode pour inclure les fonctionnalités Ultimate
+    #     # ou appeler la méthode de la classe parent si elle convient
+    #     self.run_ultimate_bot()
 
     def run_ultimate_bot(self):
         """Exécute le bot avec les fonctionnalités spécifiques au plan Ultimate."""
@@ -262,7 +286,7 @@ class UltimateMainWindow(PremiumMainWindow):
         assistant_id = self.assistant_id_input.text()
         custom_prompt = self.prompt_input.toPlainText()
 
-        # Vérifier si l'analyse de profil est activée
+        # Vérifier si l’analyse de profil est activée
         analyze_profiles = self.analyze_profiles_checkbox.isChecked()
         relevance_prompt = self.relevance_prompt_input.toPlainText() if analyze_profiles else None
 
@@ -273,7 +297,7 @@ class UltimateMainWindow(PremiumMainWindow):
             relevance_prompt_template=relevance_prompt
         )
 
-        # Créer le contrôleur avec l'assistant_id et l'option auto_reply_enabled
+        # Créer le contrôleur avec l’assistant_id et l’option auto_reply_enabled
         self.controller = MainController(
             username=self.username_input.text(),
             password=self.password_input.text(),
@@ -288,7 +312,9 @@ class UltimateMainWindow(PremiumMainWindow):
 
         # Vérifier si la limite quotidienne de messages est atteinte
         limit_reached, messages_sent = self.controller.data_manager.has_reached_message_limit(self.messages_per_day_int)
-        if limit_reached:
+
+        # Si la limite est atteinte mais auto_reply est activé, ne pas bloquer l’exécution
+        if limit_reached and not self.auto_reply_checkbox.isChecked():
             QMessageBox.warning(
                 self, "Limite atteinte",
                 f"Le bot a déjà envoyé le nombre maximum de messages aujourd'hui ({messages_sent}/{self.messages_per_day_int})."
@@ -302,6 +328,7 @@ class UltimateMainWindow(PremiumMainWindow):
             self.controller.run()
             logging.debug("Méthode run() de MainController appelée")
 
+            # Si auto_reply est activé, informer que le bot reste actif pour gérer les réponses
             if self.auto_reply_checkbox.isChecked():
                 QMessageBox.information(
                     self, "Bot en cours d'exécution",

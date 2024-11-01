@@ -232,8 +232,6 @@ class PremiumFeaturesMixin:
                 message_type='normal'
             )
 
-        # ... reste du code ...
-
         # Vérifier si la limite quotidienne de messages est atteinte
         limit_reached, messages_sent = self.controller.data_manager.has_reached_message_limit(self.messages_per_day_int)
         if limit_reached:
