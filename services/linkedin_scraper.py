@@ -350,35 +350,6 @@ class LinkedInScraper:
         else:
             logger.error("Bouton 'Envoyer une invitation' non trouvé")
 
-    def _load_all_messages(self):
-        # Attente explicite pour que la page se charge initialement
-        self.page.wait_for_selector('.msg-conversation-listitem', state='attached')
-
-        # Récupération du nombre initial de conversations visibles
-        initial_count = self.page.locator('.msg-conversation-listitem').count()
-
-        while True:
-            try:
-                load_more_button = self.page.locator('text=Charger plus de conversations')
-                if load_more_button.is_visible():
-                    load_more_button.click()
-                    # Attente pour que de nouveaux messages soient chargés
-                    self.page.wait_for_timeout(2000)
-
-                    # Vérifier si le nombre de messages a augmenté
-                    current_count = self.page.locator('.msg-conversation-listitem').count()
-                    if current_count == initial_count:
-                        # Si le nombre de messages n'a pas augmenté, arrêter de charger
-                        break
-                    else:
-                        # Mettre à jour le nombre initial pour la prochaine itération
-                        initial_count = current_count
-                else:
-                    break
-            except Exception as e:
-                print(f"Exception occurred while loading messages: {e}")
-                break
-
     def navigate_to_unread_messages(self):
         """Navigue vers la page des messages non lus et recharge si nécessaire."""
         self.page.goto("https://www.linkedin.com/messaging/?filter=unread")
@@ -474,42 +445,6 @@ class LinkedInScraper:
                 logger.error("Impossible de trouver le champ de message")
         except Exception as e:
             logger.error(f"Erreur lors de l'envoi de la réponse : {e}")
-
-    def get_first_unread_conversation(self):
-        """Récupère la première conversation non lue, si elle existe."""
-        try:
-            # Sélectionne le premier élément de la liste des conversations non lues
-            conversation_item = self.page.query_selector(
-                '.msg-conversations-container__convo-item .msg-conversation-card__convo-item-container--unread'
-            )
-
-            if conversation_item:
-                # Extraire le nom du participant
-                participant_name_element = conversation_item.query_selector(
-                    '.msg-conversation-listitem__participant-names span.truncate'
-                )
-                participant_name = participant_name_element.inner_text().strip() if participant_name_element else "Inconnu"
-
-                # Clique sur la conversation pour l'ouvrir
-                conversation_item.click()
-                self.page.wait_for_selector('.msg-s-message-list__event')
-
-                # Extraire l'historique de la conversation
-                conversation_history = self.get_conversation_history()
-
-                logger.info(f"Conversation non lue récupérée pour : {participant_name}")
-                return {
-                    'participant_name': participant_name,
-                    'conversation_history': conversation_history
-                }
-            else:
-                # Aucun message non lu
-                logger.info("Aucune conversation non lue trouvée.")
-                return None
-
-        except Exception as e:
-            logger.error(f"Erreur lors de la récupération de la conversation : {e}")
-            return None
 
     """
     Cette fonction doit être appelée avant le login et apres la connexion car la langue peut etre différente entre 
