@@ -1,9 +1,11 @@
 # premium_main_window.py
+from PySide6.QtCore import Qt
 
 from ui.base_main_window import BaseMainWindow
 from ui.premium_features_mixin import PremiumFeaturesMixin
 import logging
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox, QVBoxLayout, QHBoxLayout, QWidget, QSizePolicy
+
 
 class PremiumMainWindow(PremiumFeaturesMixin, BaseMainWindow):
     def __init__(self):
@@ -11,25 +13,100 @@ class PremiumMainWindow(PremiumFeaturesMixin, BaseMainWindow):
 
     def setup_ui(self):
         """Configure l'UI pour les utilisateurs premium."""
+        # Créer le layout principal en vertical
+        self.main_vertical_layout = QVBoxLayout()
+        self.main_layout.addLayout(self.main_vertical_layout)
+
+        # Créer le titre centré
         self.setup_title()
-        self.setup_linkedin_credentials()
-        self.setup_search_link()
+        self.title_label.setAlignment(Qt.AlignCenter)
+        self.main_vertical_layout.addWidget(self.title_label)
 
-        # Ajouter le choix du type de message juste après 'Lien de recherche'
-        self.setup_message_type_selection()
+        # Créer le layout principal en horizontal pour les colonnes
+        self.columns_layout = QHBoxLayout()
+        self.main_vertical_layout.addLayout(self.columns_layout)
 
-        # Ajouter les messages Template A/B
-        self.setup_message_templates()
+        # Colonne 1 : Paramètres généraux
+        self.general_column = QWidget()
+        self.general_layout = QVBoxLayout()
+        self.general_column.setLayout(self.general_layout)
 
-        # Ajouter le champ 'Messages par jour'
-        self.setup_messages_per_day()
+        # Colonne 2 : Paramètres de messagerie
+        self.messaging_column = QWidget()
+        self.messaging_layout = QVBoxLayout()
+        self.messaging_column.setLayout(self.messaging_layout)
 
-        # Ajouter les éléments premium (clé API, prompt)
-        self.setup_premium_ui()
+        # Ajouter les colonnes au layout principal
+        self.columns_layout.addWidget(self.general_column)
+        self.columns_layout.addWidget(self.messaging_column)
+
+        # Appeler les méthodes pour configurer les composants, en les ajoutant aux colonnes appropriées
+        self.setup_general_column()
+        self.setup_messaging_column()
+
+        # Ajouter un espace vide pour pousser le bouton en bas
+        self.main_vertical_layout.addStretch()
 
         # Si ce n'est pas un utilisateur Ultimate, ajouter le bouton 'Start Bot'
         if self.config.get('LICENSE_TYPE') != 'ultimate':
+            # Ajouter le bouton "Start Bot" centré
             self.setup_start_button()
+            self.start_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            self.start_button_layout = QHBoxLayout()
+            self.start_button_layout.addStretch()
+            self.start_button_layout.addWidget(self.start_button)
+            self.start_button_layout.addStretch()
+
+            # Ajouter le layout du bouton au layout principal vertical
+            self.main_vertical_layout.addLayout(self.start_button_layout)
+
+            # Ajuster la taille minimale de la fenêtre pour s'adapter aux colonnes
+            self.setMinimumWidth(1200)
+
+    def setup_general_column(self):
+        """Configure les éléments de la colonne des paramètres généraux."""
+        # Déplacer les composants dans le layout de la colonne générale
+        self.setup_linkedin_credentials()
+        self.general_layout.addWidget(self.username_label)
+        self.general_layout.addWidget(self.username_input)
+        self.general_layout.addWidget(self.password_label)
+        self.general_layout.addWidget(self.password_input)
+
+        self.setup_search_link()
+        self.general_layout.addWidget(self.search_link_label)
+        self.general_layout.addWidget(self.search_link_input)
+
+        self.setup_messages_per_day()
+        self.general_layout.addWidget(self.messages_per_day_label)
+        self.general_layout.addWidget(self.messages_per_day_input)
+
+        # Ajouter un espace vide pour pousser le contenu vers le haut
+        self.general_layout.addStretch()
+
+    def setup_messaging_column(self):
+        """Configure les éléments de la colonne des paramètres de messagerie."""
+        self.setup_message_type_selection()
+        # Choix du type de message
+        self.messaging_layout.addWidget(self.message_type_label)
+        self.messaging_layout.addWidget(self.normal_message_radio)
+        self.messaging_layout.addWidget(self.chatgpt_message_radio)
+
+        # Messages Template A/B
+        self.setup_message_templates()
+        self.messaging_layout.addWidget(self.message_a_label)
+        self.messaging_layout.addWidget(self.message_a_button)
+        self.messaging_layout.addWidget(self.message_b_label)
+        self.messaging_layout.addWidget(self.message_b_button)
+
+        # Clé API OpenAI et prompt personnalisé
+        self.setup_premium_ui()
+        self.messaging_layout.addWidget(self.api_key_label)
+        self.messaging_layout.addWidget(self.api_key_input)
+        self.messaging_layout.addWidget(self.prompt_label)
+        self.messaging_layout.addWidget(self.prompt_input)
+        self.messaging_layout.addWidget(self.analyze_profiles_checkbox)
+        self.messaging_layout.addWidget(self.relevance_prompt_label)
+        self.messaging_layout.addWidget(self.relevance_prompt_input)
 
     def start_bot(self):
         """Démarre le bot avec les fonctionnalités premium."""
