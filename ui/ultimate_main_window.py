@@ -119,8 +119,8 @@ class UltimateMainWindow(PremiumMainWindow):
 
             # Déplacer les composants Ultimate dans le layout de la colonne Ultimate
             self.ultimate_layout.addWidget(self.auto_reply_checkbox)
-            self.ultimate_layout.addWidget(self.assistant_id_label)
-            self.ultimate_layout.addWidget(self.assistant_id_input)
+            self.ultimate_layout.addWidget(self.auto_reply_assistant_id_label)
+            self.ultimate_layout.addWidget(self.auto_reply_assistant_id_input)
 
             # Ajouter la section "Analyser les profils"
             self.ultimate_layout.addWidget(self.analyze_profiles_checkbox)
@@ -143,17 +143,17 @@ class UltimateMainWindow(PremiumMainWindow):
         self.auto_reply_checkbox.stateChanged.connect(self.toggle_auto_reply_fields)
         self.main_layout.addWidget(self.auto_reply_checkbox)
 
-        # Champ pour l'assistant_id
-        self.assistant_id_label = QLabel("Assistant ID pour les réponses automatiques:")
-        self.assistant_id_label.setFont(font)
-        self.assistant_id_input = QLineEdit(self.config.get('ASSISTANT_ID', ''))
-        self.assistant_id_input.setFont(font)
-        self.ultimate_layout.addWidget(self.assistant_id_label)
-        self.ultimate_layout.addWidget(self.assistant_id_input)
+        # Champ pour l'assistant_id des reponses automatique
+        self.auto_reply_assistant_id_label = QLabel("Assistant ID pour les réponses automatiques:")
+        self.auto_reply_assistant_id_label.setFont(font)
+        self.auto_reply_assistant_id_input = QLineEdit(self.config.get('AUTO_REPLY_ASSISTANT_ID', ''))
+        self.auto_reply_assistant_id_input.setFont(font)
+        self.ultimate_layout.addWidget(self.auto_reply_assistant_id_label)
+        self.ultimate_layout.addWidget(self.auto_reply_assistant_id_input)
 
         # Masquer les champs de réponse automatique par défaut
-        self.assistant_id_label.hide()
-        self.assistant_id_input.hide()
+        self.auto_reply_assistant_id_label.hide()
+        self.auto_reply_assistant_id_input.hide()
 
         # Charger l'état de la case à cocher depuis la configuration
         auto_reply_enabled = self.config.get('AUTO_REPLY_ENABLED', False)
@@ -162,11 +162,11 @@ class UltimateMainWindow(PremiumMainWindow):
     def toggle_auto_reply_fields(self):
         """Afficher ou masquer les champs de réponse automatique."""
         if self.auto_reply_checkbox.isChecked():
-            self.assistant_id_label.show()
-            self.assistant_id_input.show()
+            self.auto_reply_assistant_id_label.show()
+            self.auto_reply_assistant_id_input.show()
         else:
-            self.assistant_id_label.hide()
-            self.assistant_id_input.hide()
+            self.auto_reply_assistant_id_label.hide()
+            self.auto_reply_assistant_id_input.hide()
 
     def validate_inputs(self):
         """Valide les entrées de l'utilisateur en tenant compte du plan Ultimate, avec messages_per_day entre 0 et 30."""
@@ -224,8 +224,8 @@ class UltimateMainWindow(PremiumMainWindow):
 
         # Vérifier les champs spécifiques pour les réponses automatiques si elles sont activées
         if self.auto_reply_checkbox.isChecked():
-            assistant_id = self.assistant_id_input.text()
-            if not assistant_id:
+            auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
+            if not auto_reply_assistant_id:
                 QMessageBox.warning(self, "Erreur de saisie",
                                     "Veuillez entrer l'Assistant ID pour les réponses automatiques.")
                 logging.error("Erreur de saisie : L'Assistant ID doit être rempli.")
@@ -240,11 +240,11 @@ class UltimateMainWindow(PremiumMainWindow):
 
         # Enregistrer les paramètres Ultimate
         auto_reply_enabled = self.auto_reply_checkbox.isChecked()
-        assistant_id = self.assistant_id_input.text()
+        auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
 
         self.config.update({
             'AUTO_REPLY_ENABLED': auto_reply_enabled,
-            'ASSISTANT_ID': assistant_id,
+            'AUTO_REPLY_ASSISTANT_ID': auto_reply_assistant_id,
         })
         update_config(self.config)
         logging.debug("Configuration Ultimate mise à jour avec succès")
@@ -283,7 +283,7 @@ class UltimateMainWindow(PremiumMainWindow):
         """Exécute le bot avec les fonctionnalités spécifiques au plan Ultimate."""
         # Utiliser ChatGPT pour générer les messages
         openai_api_key = self.api_key_input.text()
-        assistant_id = self.assistant_id_input.text()
+        auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
         custom_prompt = self.prompt_input.toPlainText()
 
         # Vérifier si l’analyse de profil est activée
@@ -309,7 +309,7 @@ class UltimateMainWindow(PremiumMainWindow):
             message_type='chatgpt' if self.chatgpt_message_radio.isChecked() else 'normal',
             analyze_profiles=analyze_profiles,
             auto_reply_enabled=self.auto_reply_checkbox.isChecked(),
-            assistant_id=assistant_id
+            auto_reply_assistant_id=auto_reply_assistant_id
         )
 
         # Vérifier si la limite quotidienne de messages est atteinte

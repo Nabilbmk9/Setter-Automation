@@ -13,7 +13,7 @@ class MainController:
     def __init__(
         self, username, password, search_link, messages_per_day,
         message_a=None, message_b=None, chatgpt_manager=None, message_type='normal', analyze_profiles=False,
-        auto_reply_enabled=False, assistant_id=None
+        auto_reply_enabled=False, auto_reply_assistant_id=None
     ):
         logging.info("Initializing MainController")
         self.browser_manager = None
@@ -27,7 +27,7 @@ class MainController:
         self.message_type = message_type
         self.analyze_profiles = analyze_profiles
         self.auto_reply_enabled = auto_reply_enabled
-        self.assistant_id = assistant_id
+        self.auto_reply_assistant_id = auto_reply_assistant_id
         self.scraper = None
         self.data_manager = DataManager(db_path='linkedin_contacts.db')
         self.message_toggle = False  # Pour alterner entre les messages
@@ -210,8 +210,8 @@ class MainController:
     def handle_auto_replies_sequential(self):
         """Gère les réponses automatiques aux messages non lus, avec vérification de la cohérence de la conversation."""
         logging.info("Starting sequential handling of automatic replies")
-        if not self.chatgpt_manager or not self.assistant_id:
-            logging.error("ChatGPTManager or assistant_id is not initialized.")
+        if not self.chatgpt_manager or not self.auto_reply_assistant_id:
+            logging.error("ChatGPTManager or auto_reply_assistant_id is not initialized.")
             return
 
         no_new_message_count = 0
@@ -261,7 +261,7 @@ class MainController:
                     self.chatgpt_manager.add_message_to_thread(thread_id, message['message'])
 
                 # Exécuter l'assistant sur le thread
-                run_id = self.chatgpt_manager.run_assistant(thread_id, self.assistant_id)
+                run_id = self.chatgpt_manager.run_assistant(thread_id, self.auto_reply_assistant_id)
                 if not run_id:
                     logging.error("Échec de l'exécution de l'assistant.")
                     continue
