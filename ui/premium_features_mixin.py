@@ -57,13 +57,13 @@ class PremiumFeaturesMixin:
         self.main_layout.addWidget(self.api_key_label)
         self.main_layout.addWidget(self.api_key_input)
 
-        # Prompt personnalisé pour les messages
-        self.prompt_label = QLabel("Prompt personnalisé pour les messages:")
-        self.prompt_label.setFont(font)
-        self.prompt_input = QTextEdit(self.config.get('CUSTOM_PROMPT', ''))
-        self.prompt_input.setFont(font)
-        self.main_layout.addWidget(self.prompt_label)
-        self.main_layout.addWidget(self.prompt_input)
+        # Assistant ID pour la prospection
+        self.prospecting_assistant_id_label = QLabel("Assistant ID pour la prospection:")
+        self.prospecting_assistant_id_label.setFont(font)
+        self.prospecting_assistant_id_input = QLineEdit(self.config.get('PROSPECTING_ASSISTANT_ID', ''))
+        self.prospecting_assistant_id_input.setFont(font)
+        self.main_layout.addWidget(self.prospecting_assistant_id_label)
+        self.main_layout.addWidget(self.prospecting_assistant_id_input)
 
         # Option pour activer/désactiver l'analyse de profil
         self.analyze_profiles_checkbox = QCheckBox("Analyser les profils avant d'envoyer les messages")
@@ -103,8 +103,8 @@ class PremiumFeaturesMixin:
             # Masquer les champs ChatGPT
             self.api_key_label.hide()
             self.api_key_input.hide()
-            self.prompt_label.hide()
-            self.prompt_input.hide()
+            self.prospecting_assistant_id_label.hide()
+            self.prospecting_assistant_id_input.hide()
             self.analyze_profiles_checkbox.hide()
             self.relevance_prompt_label.hide()
             self.relevance_prompt_input.hide()
@@ -118,8 +118,8 @@ class PremiumFeaturesMixin:
             # Afficher les champs ChatGPT
             self.api_key_label.show()
             self.api_key_input.show()
-            self.prompt_label.show()
-            self.prompt_input.show()
+            self.prospecting_assistant_id_label.show()
+            self.prospecting_assistant_id_input.show()
             self.analyze_profiles_checkbox.show()
 
             # Vérifier l'état de la case à cocher pour l'analyse de profil
@@ -148,11 +148,11 @@ class PremiumFeaturesMixin:
         """Valide les entrées spécifiques aux fonctionnalités premium."""
         if self.chatgpt_message_radio.isChecked():
             api_key = self.api_key_input.text()
-            custom_prompt = self.prompt_input.toPlainText()
+            prospecting_assistant_id = self.prospecting_assistant_id_input.text()
 
-            if not api_key or not custom_prompt:
+            if not api_key or not prospecting_assistant_id:
                 QMessageBox.warning(self, "Erreur de saisie", "Veuillez remplir tous les champs pour ChatGPT.")
-                logging.error("Erreur de saisie : Les champs Clé API et Prompt doivent être remplis pour ChatGPT.")
+                logging.error("Erreur de saisie : Les champs Clé API et Prospection Assistant ID doivent être remplis pour ChatGPT.")
                 return False
 
             # Si l'analyse de profil est activée, vérifier que le prompt d'analyse est fourni
@@ -185,7 +185,7 @@ class PremiumFeaturesMixin:
         self.config.update({
             'MESSAGE_TYPE': message_type,
             'OPENAI_API_KEY': self.api_key_input.text(),
-            'CUSTOM_PROMPT': self.prompt_input.toPlainText(),
+            'PROSPECTING_ASSISTANT_ID': self.prospecting_assistant_id_input.text(),
             'ANALYZE_PROFILES': analyze_profiles,
             'RELEVANCE_PROMPT': self.relevance_prompt_input.toPlainText()
         })
@@ -197,7 +197,7 @@ class PremiumFeaturesMixin:
         if self.chatgpt_message_radio.isChecked():
             # Utiliser ChatGPT pour générer les messages
             openai_api_key = self.api_key_input.text()
-            custom_prompt = self.prompt_input.toPlainText()
+            prospecting_assistant_id = self.prospecting_assistant_id_input.toPlainText()
 
             # Vérifier si l'analyse de profil est activée
             analyze_profiles = self.analyze_profiles_checkbox.isChecked()
@@ -206,7 +206,7 @@ class PremiumFeaturesMixin:
             # Créer une instance de ChatGPTManager avec les paramètres appropriés
             self.chatgpt_manager = ChatGPTManager(
                 api_key=openai_api_key,
-                prompt_template=custom_prompt,
+                prospecting_assistant_id=prospecting_assistant_id,
                 relevance_prompt_template=relevance_prompt
             )
 
@@ -218,7 +218,8 @@ class PremiumFeaturesMixin:
                 messages_per_day=self.messages_per_day_int,
                 chatgpt_manager=self.chatgpt_manager,
                 message_type='chatgpt',
-                analyze_profiles=analyze_profiles  # Passer l'option au contrôleur
+                analyze_profiles=analyze_profiles,  # Passer l'option au contrôleur
+                prospecting_assistant_id=self.prospecting_assistant_id_input.text()
             )
         else:
             # Créer le contrôleur avec les messages Template A et B

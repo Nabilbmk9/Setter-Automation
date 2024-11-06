@@ -107,8 +107,8 @@ class UltimateMainWindow(PremiumMainWindow):
         self.setup_premium_ui()
         self.messaging_layout.addWidget(self.api_key_label)
         self.messaging_layout.addWidget(self.api_key_input)
-        self.messaging_layout.addWidget(self.prompt_label)
-        self.messaging_layout.addWidget(self.prompt_input)
+        self.messaging_layout.addWidget(self.prospecting_assistant_id_label)
+        self.messaging_layout.addWidget(self.prospecting_assistant_id_input)
 
     def setup_ultimate_column(self):
         """Configure les éléments de la colonne des fonctionnalités Ultimate (y compris analyse de profil)."""
@@ -212,14 +212,14 @@ class UltimateMainWindow(PremiumMainWindow):
                 return False
 
         elif self.chatgpt_message_radio.isChecked():
-            # Vérifier que l’API Key et le prompt sont remplis
+            # Vérifier que l’API Key et l'assistant id de prospection sont remplis
             api_key = self.api_key_input.text()
-            custom_prompt = self.prompt_input.toPlainText()
+            prospecting_assistant_id = self.prospecting_assistant_id_input.text()
 
-            if not api_key or not custom_prompt:
+            if not api_key or not prospecting_assistant_id:
                 QMessageBox.warning(self, "Erreur de saisie",
                                     "Veuillez remplir la clé API et le prompt pour ChatGPT.")
-                logging.error("Erreur de saisie : Les champs Clé API et Prompt doivent être remplis pour ChatGPT.")
+                logging.error("Erreur de saisie : Les champs Clé API et et l'Assistant ID de prospection doivent être remplis pour ChatGPT.")
                 return False
 
         # Vérifier les champs spécifiques pour les réponses automatiques si elles sont activées
@@ -284,7 +284,6 @@ class UltimateMainWindow(PremiumMainWindow):
         # Utiliser ChatGPT pour générer les messages
         openai_api_key = self.api_key_input.text()
         auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
-        custom_prompt = self.prompt_input.toPlainText()
 
         # Vérifier si l’analyse de profil est activée
         analyze_profiles = self.analyze_profiles_checkbox.isChecked()
@@ -293,7 +292,6 @@ class UltimateMainWindow(PremiumMainWindow):
         # Créer une instance de ChatGPTManager avec les paramètres appropriés
         self.chatgpt_manager = ChatGPTManager(
             api_key=openai_api_key,
-            prompt_template=custom_prompt,
             relevance_prompt_template=relevance_prompt
         )
 
@@ -309,7 +307,8 @@ class UltimateMainWindow(PremiumMainWindow):
             message_type='chatgpt' if self.chatgpt_message_radio.isChecked() else 'normal',
             analyze_profiles=analyze_profiles,
             auto_reply_enabled=self.auto_reply_checkbox.isChecked(),
-            auto_reply_assistant_id=auto_reply_assistant_id
+            auto_reply_assistant_id=auto_reply_assistant_id,
+            prospecting_assistant_id=self.prospecting_assistant_id_input.text()
         )
 
         # Vérifier si la limite quotidienne de messages est atteinte

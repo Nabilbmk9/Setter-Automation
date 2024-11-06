@@ -13,7 +13,7 @@ class MainController:
     def __init__(
         self, username, password, search_link, messages_per_day,
         message_a=None, message_b=None, chatgpt_manager=None, message_type='normal', analyze_profiles=False,
-        auto_reply_enabled=False, auto_reply_assistant_id=None
+        auto_reply_enabled=False, auto_reply_assistant_id=None, prospecting_assistant_id=None
     ):
         logging.info("Initializing MainController")
         self.browser_manager = None
@@ -31,6 +31,7 @@ class MainController:
         self.scraper = None
         self.data_manager = DataManager(db_path='linkedin_contacts.db')
         self.message_toggle = False  # Pour alterner entre les messages
+        self.prospecting_assistant_id = prospecting_assistant_id
 
     def run(self):
         try:
@@ -158,11 +159,13 @@ class MainController:
                         # Remplacer les variables dans le message
                         generated_message = next_message.format(**profile_data)
                     elif self.message_type == 'chatgpt':
-                        if not self.chatgpt_manager:
-                            logging.error("ChatGPTManager n'est pas initialisé.")
+                        if not self.chatgpt_manager or not self.prospecting_assistant_id:
+                            logging.error("ChatGPTManager ou l'Assistant ID pour la prospection n'est pas initialisé.")
                             continue
-                        # Générer le message avec ChatGPT
-                        generated_message = self.chatgpt_manager.generate_response(profile_data)
+                        # Générer le message avec l'assistant via assistant ID
+                        generated_message = self.chatgpt_manager.generate_response_with_assistant(
+                            self.prospecting_assistant_id, profile_data
+                        )
                     else:
                         logging.error(f"Type de message invalide: {self.message_type}")
                         continue

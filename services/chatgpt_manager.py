@@ -1,34 +1,34 @@
 # services/chatgpt_manager.py
+import time
 
 from openai import OpenAI, OpenAIError, AssistantEventHandler
 import logging
 
 
 class ChatGPTManager:
-    def __init__(self, api_key, prompt_template=None, relevance_prompt_template=None):
+    def __init__(self, api_key, relevance_prompt_template=None):
         self.api_key = api_key
-        self.prompt_template = prompt_template
         self.relevance_prompt_template = relevance_prompt_template
         self.client = OpenAI(api_key=self.api_key)
 
-    def generate_response(self, prompt_variables):
-        """Génère une réponse en utilisant ChatGPT avec les variables du prompt."""
-        # Remplacer les variables dans le prompt des messages
-        prompt = self.prompt_template.format(**prompt_variables)
-
-        try:
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "user", "content": prompt}]
-            )
-            # Accéder au contenu de la réponse
-            return response.choices[0].message.content.strip()
-        except OpenAIError as e:
-            logging.error(f"Erreur avec l'API OpenAI : {e}")
-            return None
-        except Exception as e:
-            logging.error(f"Erreur inattendue lors de la génération de la réponse : {e}")
-            return None
+    # def generate_response(self, prompt_variables):
+    #     """Génère une réponse en utilisant ChatGPT avec les variables du prompt."""
+    #     # Remplacer les variables dans le prompt des messages
+    #     prompt = self.prompt_template.format(**prompt_variables)
+    #
+    #     try:
+    #         response = self.client.chat.completions.create(
+    #             model="gpt-3.5-turbo",
+    #             messages=[{"role": "user", "content": prompt}]
+    #         )
+    #         # Accéder au contenu de la réponse
+    #         return response.choices[0].message.content.strip()
+    #     except OpenAIError as e:
+    #         logging.error(f"Erreur avec l'API OpenAI : {e}")
+    #         return None
+    #     except Exception as e:
+    #         logging.error(f"Erreur inattendue lors de la génération de la réponse : {e}")
+    #         return None
 
     def evaluate_profile_relevance(self, profile_data):
         """Évalue la pertinence d'un profil en utilisant ChatGPT."""
@@ -144,3 +144,60 @@ class ChatGPTManager:
         except OpenAIError as e:
             logging.error(f"Erreur lors de la récupération du contenu du thread : {e}")
             return []
+
+    def generate_response_with_assistant(self, assistant_id, profile_data):
+        """Génère une réponse en utilisant l'assistant via assistant ID avec les données de profil."""
+        try:
+            thread_id = self.create_thread()
+            if not thread_id:
+                logging.error("Échec de la création du thread.")
+                return None
+
+            # Préparer le message avec les données du profil
+            message_content = self.format_profile_data(profile_data)
+            if not message_content:
+                logging.error("Échec de la préparation des données du profil.")
+                return None
+
+            # Ajouter le message au thread
+            self.add_message_to_thread(thread_id, message_content)
+
+            # Exécuter l'assistant
+            run_id = self.run_assistant(thread_id, assistant_id)
+            if not run_id:
+                logging.error("Échec de l'exécution de l'assistant.")
+                return None
+
+            # Attendre que l'assistant ait terminé de générer la réponse
+            time.sleep(5)
+
+            # Récupérer la réponse de l'assistant
+            assistant_response = self.get_assistant_response(thread_id)
+            if assistant_response:
+                return assistant_response
+            else:
+                logging.error("Aucune réponse de l'assistant.")
+                return None
+
+        except Exception as e:
+            logging.error(f"Erreur lors de la génération de la réponse avec l'assistant : {e}")
+            return None
+
+    def format_profile_data(self, profile_data):
+        """Formate les données du profil en un message pour l'assistant."""
+        try:
+            message = (
+                f"Voici les informations du profil:\n"
+                f"Prénom: {profile_data.get('first_name', '')}\n"
+                # f"Nom: {profile_data.get('last_name', '')}\n"
+                # f"Nom complet: {profile_data.get('full_name', '')}\n"
+                f"Titre: {profile_data.get('title', '')}\n"
+                # f"Entreprise: {profile_data.get('company', '')}\n"
+                f"Informations: {profile_data.get('info', '')}\n"
+                # f"Expérience: {profile_data.get('experience', '')}\n"
+                # f"Position: {profile_data.get('position', '')}\n"
+            )
+            return message
+        except Exception as e:
+            logging.error(f"Erreur lors du formatage des données du profil : {e}")
+            return None
