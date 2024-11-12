@@ -121,13 +121,13 @@ class MainController:
                 # Préparer les données du profil pour le remplacement des placeholders
                 profile_data = {
                     'first_name': profile.get('first_name', ''),
-                    'last_name': profile.get('last_name', ''),
-                    'full_name': profile.get('full_name', ''),
+                    # 'last_name': profile.get('last_name', ''),
+                    # 'full_name': profile.get('full_name', ''),
                     'title': profile.get('title', ''),
-                    'company': profile.get('company', ''),
+                    # 'company': profile.get('company', ''),
                     'info': profile.get('info', ''),
-                    'experience': profile.get('experience', ''),
-                    'position': profile.get('position', '')
+                    # 'experience': profile.get('experience', ''),
+                    # 'position': profile.get('position', '')
                 }
 
                 # **Nouvelle étape : Analyser le profil si l'option est activée**
