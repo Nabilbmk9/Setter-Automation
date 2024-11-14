@@ -51,6 +51,15 @@ class UltimateMainWindow(PremiumMainWindow):
         self.setup_messaging_column()
         self.setup_ultimate_column()
 
+        # Ajouter la case à cocher du mode test dans la colonne générale
+        self.test_mode_checkbox = QCheckBox("Activer le mode test")
+        self.test_mode_checkbox.setFont(self.font)
+        self.general_layout.addWidget(self.test_mode_checkbox)
+
+        # Charger l'état du mode test depuis la configuration
+        test_mode_enabled = self.config.get('TEST_MODE_ENABLED', False)
+        self.test_mode_checkbox.setChecked(test_mode_enabled)
+
         # Ajouter un espace vide pour pousser le bouton en bas
         self.main_vertical_layout.addStretch()
 
@@ -234,7 +243,7 @@ class UltimateMainWindow(PremiumMainWindow):
         return True
 
     def save_configuration(self):
-        """Sauvegarde la configuration mise à jour, y compris les paramètres Ultimate."""
+        """Sauvegarde la configuration mise à jour, y compris les paramètres Ultimate et le mode test."""
         # Appeler la méthode de sauvegarde de la classe parent
         super().save_configuration()
 
@@ -242,9 +251,13 @@ class UltimateMainWindow(PremiumMainWindow):
         auto_reply_enabled = self.auto_reply_checkbox.isChecked()
         auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
 
+        # Enregistrer l'état du mode test
+        test_mode_enabled = self.test_mode_checkbox.isChecked()
+
         self.config.update({
             'AUTO_REPLY_ENABLED': auto_reply_enabled,
             'AUTO_REPLY_ASSISTANT_ID': auto_reply_assistant_id,
+            'TEST_MODE_ENABLED': test_mode_enabled,
         })
         update_config(self.config)
         logging.debug("Configuration Ultimate mise à jour avec succès")
@@ -289,6 +302,9 @@ class UltimateMainWindow(PremiumMainWindow):
         analyze_profiles = self.analyze_profiles_checkbox.isChecked()
         relevance_prompt = self.relevance_prompt_input.toPlainText() if analyze_profiles else None
 
+        # Récupérer l'état du mode test à partir de la case à cocher
+        test_mode_enabled = self.test_mode_checkbox.isChecked()
+
         # Créer une instance de ChatGPTManager avec les paramètres appropriés
         self.chatgpt_manager = ChatGPTManager(
             api_key=openai_api_key,
@@ -308,7 +324,8 @@ class UltimateMainWindow(PremiumMainWindow):
             analyze_profiles=analyze_profiles,
             auto_reply_enabled=self.auto_reply_checkbox.isChecked(),
             auto_reply_assistant_id=auto_reply_assistant_id,
-            prospecting_assistant_id=self.prospecting_assistant_id_input.text()
+            prospecting_assistant_id=self.prospecting_assistant_id_input.text(),
+            test_mode_enabled=test_mode_enabled
         )
 
         # Vérifier si la limite quotidienne de messages est atteinte

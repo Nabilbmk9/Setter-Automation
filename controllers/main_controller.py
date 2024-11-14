@@ -1,11 +1,15 @@
 # main_controller.py
 
 import logging, time
+import sys
+
+from PySide6.QtWidgets import QDialog
 
 from constants.errors import LanguageError
 from services.browser_manager import BrowserManager
 from services.linkedin_scraper import LinkedInScraper
 from services.data_manager import DataManager
+from ui.message_preview_dialog import MessagePreviewDialog
 from utils.utils import extract_keywords_from_search_link, get_next_message
 
 
@@ -13,7 +17,8 @@ class MainController:
     def __init__(
         self, username, password, search_link, messages_per_day,
         message_a=None, message_b=None, chatgpt_manager=None, message_type='normal', analyze_profiles=False,
-        auto_reply_enabled=False, auto_reply_assistant_id=None, prospecting_assistant_id=None
+        auto_reply_enabled=False, auto_reply_assistant_id=None, prospecting_assistant_id=None,
+        test_mode_enabled=False
     ):
         logging.info("Initializing MainController")
         self.browser_manager = None
@@ -32,6 +37,7 @@ class MainController:
         self.data_manager = DataManager(db_path='linkedin_contacts.db')
         self.message_toggle = False  # Pour alterner entre les messages
         self.prospecting_assistant_id = prospecting_assistant_id
+        self.test_mode_enabled = test_mode_enabled
 
     def run(self):
         try:
@@ -130,7 +136,7 @@ class MainController:
                     # 'position': profile.get('position', '')
                 }
 
-                # **Nouvelle étape : Analyser le profil si l'option est activée**
+                # Analyser le profil si l'option est activée
                 if self.analyze_profiles:
                     if not self.chatgpt_manager:
                         logging.error("ChatGPTManager n'est pas initialisé.")
@@ -150,55 +156,87 @@ class MainController:
                         logging.error(f"Erreur lors de l'évaluation du profil pour {linkedin_profile_link}: {e}")
                         continue
 
-                # Générer le message en fonction du type de message
-                try:
-                    if self.message_type == 'normal':
-                        next_message, self.message_toggle = get_next_message(
-                            self.message_a, self.message_b, self.message_toggle
-                        )
-                        # Remplacer les variables dans le message
-                        generated_message = next_message.format(**profile_data)
-                    elif self.message_type == 'chatgpt':
-                        if not self.chatgpt_manager or not self.prospecting_assistant_id:
-                            logging.error("ChatGPTManager ou l'Assistant ID pour la prospection n'est pas initialisé.")
-                            continue
-                        # Générer le message avec l'assistant via assistant ID
-                        generated_message = self.chatgpt_manager.generate_response_with_assistant(
-                            self.prospecting_assistant_id, profile_data
-                        )
+                # **Initialiser le message généré à None**
+                generated_message = None
+
+                # **Commencer la boucle pour le mode test**
+                while True:
+                    # Générer le message en fonction du type de message
+                    try:
+                        if self.message_type == 'normal':
+                            next_message, self.message_toggle = get_next_message(
+                                self.message_a, self.message_b, self.message_toggle
+                            )
+                            # Remplacer les variables dans le message
+                            generated_message = next_message.format(**profile_data)
+                        elif self.message_type == 'chatgpt':
+                            if not self.chatgpt_manager or not self.prospecting_assistant_id:
+                                logging.error(
+                                    "ChatGPTManager ou l'Assistant ID pour la prospection n'est pas initialisé.")
+                                break  # Sortir de la boucle while True
+                            # Générer le message avec l'assistant via assistant ID
+                            generated_message = self.chatgpt_manager.generate_response_with_assistant(
+                                self.prospecting_assistant_id, profile_data
+                            )
+                        else:
+                            logging.error(f"Type de message invalide: {self.message_type}")
+                            break  # Sortir de la boucle while True
+                    except Exception as e:
+                        logging.error(
+                            f"Erreur lors de la génération du message pour {linkedin_profile_link}: {e}")
+                        break  # Sortir de la boucle while True
+
+                    if not generated_message:
+                        logging.info(f"No message generated for {linkedin_profile_link}, skipping.")
+                        break  # Sortir de la boucle while True
+
+                    # **Ajout pour le mode "test"**
+                    if self.test_mode_enabled:
+                        # Afficher la fenêtre de prévisualisation
+                        preview_dialog = MessagePreviewDialog(generated_message)
+                        result = preview_dialog.exec()
+
+                        if result == QDialog.Accepted:
+                            # L'utilisateur a accepté le message, sortir de la boucle pour envoyer le message
+                            break  # Sortir de la boucle while True
+                        elif result == 2:
+                            # L'utilisateur a choisi "Ressayer", la boucle continue et le message sera regénéré
+                            continue  # Recommencer la boucle pour regénérer le message
+                        else:
+                            # L'utilisateur a annulé, fermer proprement le contrôleur et l'application
+                            self.close()
+                            sys.exit()
                     else:
-                        logging.error(f"Type de message invalide: {self.message_type}")
-                        continue
-                except Exception as e:
-                    logging.error(
-                        f"Erreur lors de la génération du message pour {linkedin_profile_link}: {e}")
+                        # Le mode test n'est pas activé, continuer normalement
+                        break  # Sortir de la boucle while True
+
+                # **Vérifier si un message a été généré et accepté**
+                if generated_message:
+                    # Envoyer le message
+                    self.scraper.click_connect_or_more_button()
+                    self.scraper.enter_custom_message(generated_message)
+
+                    # Enregistrer l'envoi du message dans la base de données
+                    self.data_manager.add_contact(
+                        profile.get('full_name'),
+                        profile.get('first_name'),
+                        profile.get('last_name'),
+                        linkedin_profile_link
+                    )
+                    contact_id = self.data_manager.get_contact_id(linkedin_profile_link)
+                    search_id = self.data_manager.get_search_id(self.search_link)
+                    self.data_manager.add_message(generated_message, contact_id, search_id)
+
+                    messages_sent += 1
+                    logging.info(f"{messages_sent}/{self.messages_per_day} messages sent")
+                else:
+                    # Si aucun message n'a été généré ou que l'utilisateur a annulé, passer au profil suivant
+                    logging.info(f"Message non envoyé à {linkedin_profile_link}")
                     continue
 
-                if not generated_message:
-                    logging.info(f"No message generated for {linkedin_profile_link}, skipping.")
-                    continue
-
-                # Envoyer le message
-                self.scraper.click_connect_or_more_button()
-                self.scraper.enter_custom_message(generated_message)
-
-                # Enregistrer l'envoi du message dans la base de données
-                self.data_manager.add_contact(
-                    profile.get('full_name'),
-                    profile.get('first_name'),
-                    profile.get('last_name'),
-                    linkedin_profile_link
-                )
-                contact_id = self.data_manager.get_contact_id(linkedin_profile_link)
-                search_id = self.data_manager.get_search_id(self.search_link)
-                self.data_manager.add_message(generated_message, contact_id, search_id)
-
-                messages_sent += 1
-                logging.info(f"{messages_sent}/{self.messages_per_day} messages sent")
-
-                if messages_sent >= self.messages_per_day:
-                    logging.info(f"Daily message limit reached: {messages_sent}/{self.messages_per_day}")
-                    break
+            if messages_sent >= self.messages_per_day:
+                logging.info(f"Daily message limit reached: {messages_sent}/{self.messages_per_day}")
+                break
 
             if self.scraper.is_next_button_disabled():
                 logging.info("Last page reached, stopping the bot")
