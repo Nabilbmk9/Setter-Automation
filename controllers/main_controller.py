@@ -127,7 +127,7 @@ class MainController:
                 # Préparer les données du profil pour le remplacement des placeholders
                 profile_data = {
                     'first_name': profile.get('first_name', ''),
-                    # 'last_name': profile.get('last_name', ''),
+                    'last_name': profile.get('last_name', ''),
                     # 'full_name': profile.get('full_name', ''),
                     'title': profile.get('title', ''),
                     # 'company': profile.get('company', ''),
