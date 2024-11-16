@@ -2,7 +2,9 @@
 
 import logging, time
 import sys
+import threading
 
+import pyautogui
 from PySide6.QtWidgets import QDialog
 
 from constants.errors import LanguageError
@@ -39,8 +41,20 @@ class MainController:
         self.prospecting_assistant_id = prospecting_assistant_id
         self.test_mode_enabled = test_mode_enabled
 
+    def prevent_sleep(self):
+        """Fonction qui permet au programme de ne pas se met en veille pendant l'execution"""
+        def keep_awake():
+            while True:
+                pyautogui.press('shift')
+                time.sleep(60)  # Répéter toutes les 60 secondes
+
+        threading.Thread(target=keep_awake, daemon=True).start()
+
     def run(self):
         try:
+            logging.info("Prévention de la mise en veille activée")
+            self.prevent_sleep()  # Ajout pour prévenir la mise en veille
+
             logging.info("Starting the browser manager and LinkedIn scraper")
             self.browser_manager = BrowserManager(headless=False, block_images=False)
             self.scraper = LinkedInScraper(self.browser_manager.new_page())
