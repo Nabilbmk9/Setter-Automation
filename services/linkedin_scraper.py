@@ -34,7 +34,7 @@ class LinkedInScraper:
         logger.info("Authentification vérifiée")
 
     def get_all_profiles_on_page(self):
-        self.page.wait_for_selector('li.reusable-search__result-container')
+        self.page.wait_for_selector('div[data-view-name="search-entity-result-universal-template"]')
         all_profiles_list = self._fetch_profiles_list()
         all_profiles_info = [
             self._extract_profile_info(profile_content)
@@ -267,7 +267,7 @@ class LinkedInScraper:
             return False
 
     def _fetch_profiles_list(self):
-        return self.page.query_selector_all('li.reusable-search__result-container')
+        return self.page.query_selector_all('div[data-view-name="search-entity-result-universal-template"]')
 
     def _extract_profile_info(self, profile_content):
         action_div = profile_content.query_selector('div.entity-result__actions.entity-result__divider')
@@ -277,13 +277,13 @@ class LinkedInScraper:
         if connect_or_follow not in self.labels["connect_or_follow"]:
             return None
 
-        linkedin_profile_link_element = profile_content.query_selector('a')
+        linkedin_profile_link_element = profile_content.query_selector('a[href*="/in/"]')
         if not linkedin_profile_link_element:
             return None
         linkedin_profile_link = linkedin_profile_link_element.get_attribute('href')
 
-        # Modification pour le nom complet
-        full_name_element = profile_content.query_selector('span.entity-result__title-text a span[dir="ltr"]')
+        full_name_element = profile_content.query_selector(
+            'span.entity-result__title-line a span[dir="ltr"] span[aria-hidden="true"]')
         if not full_name_element:
             return None
         full_name = full_name_element.inner_text().strip()
@@ -295,7 +295,7 @@ class LinkedInScraper:
         last_name = name_parts[1] if len(name_parts) > 1 else ""
 
         return {
-            "full_name": f"{first_name} {last_name}",
+            "full_name": full_name,
             "first_name": first_name,
             "last_name": last_name,
             "linkedin_profile_link": linkedin_profile_link,
