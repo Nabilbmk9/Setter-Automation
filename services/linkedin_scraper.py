@@ -47,20 +47,28 @@ class LinkedInScraper:
 
     def click_connect_or_more_button(self):
         """Gère le clic sur 'Se connecter' ou 'Plus' pour accéder à 'Se connecter'."""
-        action_buttons, button_texts = self._get_profile_action_buttons()
+        try:
+            # Récupération des boutons d'action
+            action_buttons, button_texts = self._get_profile_action_buttons()
 
-        # Essayer de cliquer sur "Se connecter"
-        if self._click_button_by_text(action_buttons, self.labels["connect"]):
-            logger.info("Bouton 'Se connecter' cliqué")
-            self._click_add_note_button()
-            return
+            if not action_buttons:
+                logger.error("Aucun bouton d'action trouvé sur la page de profil.")
+                return  # Sortir de la fonction sans arrêter l'application
 
-        # Sinon, cliquer sur "Plus" puis "Se connecter" dans le menu déroulant
-        if self._click_button_by_text(action_buttons, self.labels["plus"]):
-            logger.info("Bouton 'Plus' cliqué")
-            if self._click_connect_button_from_dropdown():
-                logger.info("Bouton 'Se connecter' cliqué dans le menu déroulant")
+            # Essayer de cliquer sur "Se connecter"
+            if self._click_button_by_text(action_buttons, self.labels["connect"]):
+                logger.info("Bouton 'Se connecter' cliqué")
                 self._click_add_note_button()
+                return
+
+            # Sinon, cliquer sur "Plus" puis "Se connecter" dans le menu déroulant
+            if self._click_button_by_text(action_buttons, self.labels["plus"]):
+                logger.info("Bouton 'Plus' cliqué")
+                if self._click_connect_button_from_dropdown():
+                    logger.info("Bouton 'Se connecter' cliqué dans le menu déroulant")
+                    self._click_add_note_button()
+        except Exception as e:
+            logger.error(f"Erreur lors de l'interaction avec les boutons d'action : {e}")
 
     def enter_custom_message(self, message):
         """Écrit le message généré dans le champ de texte."""
@@ -306,27 +314,44 @@ class LinkedInScraper:
 
     def _get_profile_action_buttons(self):
         """Récupère les boutons d'action de profil et leurs textes."""
-        action_buttons = self.page.query_selector_all('.pvs-profile-actions__action')
-
-        button_texts = [button.inner_text().strip() for button in action_buttons]
-
-        return action_buttons, button_texts
+        # Trouver le bouton "More" via son aria-label
+        main_element = self.page.query_selector("main")
+        more_button = main_element.query_selector(f"button[aria-label='{self.labels['more_actions']}']")
+        if more_button:
+            # Obtenir le div qui contient le bouton "More" (div avec id comme "ember1033")
+            more_button_div = more_button.evaluate_handle("button => button.closest('div')")
+            # Obtenir le parent de ce div, qui est le conteneur des boutons d'action
+            action_buttons_container = more_button_div.evaluate_handle("div => div.parentElement.parentElement")
+            # Récupérer tous les boutons dans le conteneur
+            action_buttons = action_buttons_container.query_selector_all("button")
+            # Obtenir les textes des boutons
+            button_texts = [
+                button.evaluate("btn => btn.textContent.trim()") for button in action_buttons
+            ]
+            return action_buttons, button_texts
+        else:
+            return [], []
 
     def _click_button_by_text(self, action_buttons, button_text):
         """Clique sur le bouton avec le texte spécifié."""
         for button in action_buttons:
-            text = button.inner_text().strip()
-            if text == button_text:
-                button.click()
-                return True
+            try:
+                # Récupérer le texte visible avec textContent
+                text = button.evaluate("btn => btn.textContent.trim()")
+                if text == button_text:
+                    button.click()
+                    return True
+            except Exception as e:
+                logger.warning(f"Erreur lors de la récupération du texte du bouton : {e}")
         return False
 
     def _click_connect_button_from_dropdown(self):
         """Clique sur le bouton 'Se connecter' dans le menu déroulant."""
+        main_element = self.page.query_selector("main")
         self.page.wait_for_timeout(1000)  # Attendre que le menu déroulant apparaisse
-        dropdown_buttons = self.page.query_selector_all('.artdeco-dropdown__item--is-dropdown')
+        dropdown_buttons = main_element.query_selector_all('.artdeco-dropdown__item--is-dropdown')
         for dropdown_button in dropdown_buttons:
-            dropdown_text = dropdown_button.inner_text().strip()
+            dropdown_text = dropdown_button.evaluate("btn => btn.textContent.trim()")
             if dropdown_text == self.labels['connect']:
                 dropdown_button.click()
                 return True

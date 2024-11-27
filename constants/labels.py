@@ -6,6 +6,7 @@ LABELS = {
         'connect': "Se connecter",
         'connect_or_follow': ["Se connecter", "Suivre"],
         'plus': "Plus",
+        'more_actions': "Plus d'actions",
         'add_a_note': "Ajouter une note",
         'send_invitation': "Envoyer une invitation"
     },
@@ -16,6 +17,7 @@ LABELS = {
         'connect': "Connect",
         'connect_or_follow': ["Connect", "Follow"],
         'plus': "More",
+        'more_actions': "More actions",
         'add_a_note': "Add a note",
         'send_invitation': "Send invitation"
     }
