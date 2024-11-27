@@ -270,20 +270,22 @@ class LinkedInScraper:
         return self.page.query_selector_all('div[data-view-name="search-entity-result-universal-template"]')
 
     def _extract_profile_info(self, profile_content):
-        action_div = profile_content.query_selector('div.entity-result__actions.entity-result__divider')
-        if not action_div:
+        # Étape 1: Trouver le bouton 'Connect' ou 'Pending'
+        action_button = profile_content.query_selector('button.artdeco-button')
+        if not action_button:
             return None
-        connect_or_follow = action_div.inner_text()
+        connect_or_follow = action_button.inner_text().strip()
         if connect_or_follow not in self.labels["connect_or_follow"]:
             return None
 
+        # Étape 2: Obtenir le lien du profil
         linkedin_profile_link_element = profile_content.query_selector('a[href*="/in/"]')
         if not linkedin_profile_link_element:
             return None
         linkedin_profile_link = linkedin_profile_link_element.get_attribute('href')
 
-        full_name_element = profile_content.query_selector(
-            'span.entity-result__title-line a span[dir="ltr"] span[aria-hidden="true"]')
+        # Étape 3: Obtenir le nom complet
+        full_name_element = profile_content.query_selector('a[href*="/in/"] span[dir="ltr"] span[aria-hidden="true"]')
         if not full_name_element:
             return None
         full_name = full_name_element.inner_text().strip()
@@ -292,7 +294,7 @@ class LinkedInScraper:
         # Extraction du prénom et du nom
         name_parts = full_name.split()
         first_name = name_parts[0] if len(name_parts) > 0 else ""
-        last_name = name_parts[1] if len(name_parts) > 1 else ""
+        last_name = ' '.join(name_parts[1:]) if len(name_parts) > 1 else ""
 
         return {
             "full_name": full_name,
