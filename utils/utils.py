@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import re
@@ -47,3 +48,16 @@ def get_resource_path(relative_path):
     """Obtenir le chemin absolu d'une ressource, en utilisant `sys._MEIPASS` si disponible."""
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     return os.path.join(base_path, relative_path)
+
+
+def get_version_from_config():
+    config_path = os.path.join("config", "app_config.json")
+    try:
+        with open(config_path, "r") as config_file:
+            config_data = json.load(config_file)
+            return config_data.get("current_version", "Unknown Version")
+    except FileNotFoundError:
+        return "Version file not found"
+    except json.JSONDecodeError:
+        return "Invalid JSON"
+

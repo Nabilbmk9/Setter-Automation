@@ -11,7 +11,7 @@ from PySide6.QtCore import Qt
 from config.config import load_config, update_config
 from controllers.main_controller import MainController
 from ui.styles import get_stylesheet
-from utils.utils import get_resource_path
+from utils.utils import get_resource_path, get_version_from_config
 from ui.message_edit_dialog import MessageEditDialog
 
 
@@ -48,11 +48,20 @@ class BaseMainWindow(QMainWindow):
 
     def setup_title(self):
         """Configure le titre de l'application."""
-        self.title_label = QLabel("Bot LinkedIn")
+        version = get_version_from_config()
+
+        self.title_label = QLabel(f"Bot LinkedIn")
         self.title_label.setAlignment(Qt.AlignCenter)
         self.title_label.setObjectName("title")
         self.title_label.setFont(self.font)
+
+        self.version_label = QLabel(f"Version {version}")
+        self.version_label.setAlignment(Qt.AlignCenter)
+        self.version_label.setObjectName("version")
+        self.version_label.setFont(self.font)
+
         self.main_layout.addWidget(self.title_label)
+        self.main_layout.addWidget(self.version_label)
         self.main_layout.addSpacing(30)
 
     def setup_linkedin_credentials(self):

@@ -12,6 +12,10 @@ def get_stylesheet():
             font-size: 24px;
             margin-bottom: 20px;
         }
+        QLabel#version {
+            font-size: 12px;
+            font-weight: normal;
+        }
         QLineEdit {
             background-color: #243672;
             color: white;
