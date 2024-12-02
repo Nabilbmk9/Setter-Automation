@@ -55,7 +55,7 @@ class BaseMainWindow(QMainWindow):
         self.title_label.setObjectName("title")
         self.title_label.setFont(self.font)
 
-        self.version_label = QLabel(f"Version {version}")
+        self.version_label = QLabel(f"Version 1.1.4")
         self.version_label.setAlignment(Qt.AlignCenter)
         self.version_label.setObjectName("version")
         self.version_label.setFont(self.font)
