@@ -1,12 +1,23 @@
 import logging
 import os
 import json
+import platform
 
 
 def get_log_file_path():
-    appdata_dir = os.getenv('APPDATA')
-    log_file = os.path.join(appdata_dir, 'linkedin_automation_bot', 'app.log')
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    system = platform.system()
+    if system == 'Windows':
+        appdata_dir = os.getenv('APPDATA')
+        log_dir = os.path.join(appdata_dir, 'linkedin_automation_bot')
+    elif system == 'Darwin':  # macOS
+        appdata_dir = os.path.expanduser('~/Library/Application Support')
+        log_dir = os.path.join(appdata_dir, 'linkedin_automation_bot')
+    else:  # Linux et autres systèmes Unix
+        appdata_dir = os.path.expanduser('~/.local/share')
+        log_dir = os.path.join(appdata_dir, 'linkedin_automation_bot')
+
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, 'app.log')
     return log_file
 
 
