@@ -1,18 +1,18 @@
 # ultimate_main_window.py
 from PySide6.QtCore import Qt
-
 from controllers.main_controller import MainController
 from services.chatgpt_manager import ChatGPTManager
 from ui.premium_main_window import PremiumMainWindow
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QCheckBox, QLabel, QTextEdit, \
-    QMessageBox, QLineEdit
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QCheckBox, QLabel, QTextEdit, \
+    QMessageBox, QLineEdit, QHBoxLayout, QSizePolicy
 import logging
 from config.config import update_config
 
-
 class UltimateMainWindow(PremiumMainWindow):
     def setup_ui(self):
-        """Configure l'UI pour les utilisateurs Ultimate avec une disposition en colonnes, avec un titre centré en haut et le bouton 'Start Bot' en bas."""
+        """Configure l'UI pour les utilisateurs Ultimate avec une seule colonne,
+        avec un titre centré en haut et le bouton 'Start Bot' en bas."""
+
         # Créer le layout principal en vertical
         self.main_vertical_layout = QVBoxLayout()
         self.main_layout.addLayout(self.main_vertical_layout)
@@ -22,45 +22,24 @@ class UltimateMainWindow(PremiumMainWindow):
         self.title_label.setAlignment(Qt.AlignCenter)
         self.main_vertical_layout.addWidget(self.title_label)
 
-        # Créer le layout principal en horizontal pour les colonnes
-        self.columns_layout = QHBoxLayout()
-        self.main_vertical_layout.addLayout(self.columns_layout)
-
-        # Colonne 1 : Paramètres généraux
-        self.general_column = QWidget()
-        self.general_layout = QVBoxLayout()
-        self.general_column.setLayout(self.general_layout)
-
-        # Colonne 2 : Paramètres de messagerie
-        self.messaging_column = QWidget()
-        self.messaging_layout = QVBoxLayout()
-        self.messaging_column.setLayout(self.messaging_layout)
-
-        # Colonne 3 : Fonctionnalités Ultimate (y compris analyse de profil)
-        self.ultimate_column = QWidget()
-        self.ultimate_layout = QVBoxLayout()
-        self.ultimate_column.setLayout(self.ultimate_layout)
-
-        # Ajouter les colonnes au layout principal
-        self.columns_layout.addWidget(self.general_column)
-        self.columns_layout.addWidget(self.messaging_column)
-        self.columns_layout.addWidget(self.ultimate_column)
-
-        # Appeler les méthodes pour configurer les composants, en les ajoutant aux colonnes appropriées
+        # Au lieu de 3 colonnes, on va tout mettre dans un seul layout vertical
+        # Ajouter les éléments "généraux"
         self.setup_general_column()
+
+        # Ajouter les éléments "messaging"
         self.setup_messaging_column()
+
+        # Ajouter les éléments "ultimate" si disponible
         self.setup_ultimate_column()
 
-        # Ajouter la case à cocher du mode test dans la colonne générale
+        # Ajouter la case à cocher du mode test
         self.test_mode_checkbox = QCheckBox("Activer le mode test")
         self.test_mode_checkbox.setFont(self.font)
-        self.general_layout.addWidget(self.test_mode_checkbox)
-
-        # Charger l'état du mode test depuis la configuration
+        self.main_vertical_layout.addWidget(self.test_mode_checkbox)
         test_mode_enabled = self.config.get('TEST_MODE_ENABLED', False)
         self.test_mode_checkbox.setChecked(test_mode_enabled)
 
-        # Ajouter un espace vide pour pousser le bouton en bas
+        # Ajouter un espace vide pour pousser le bouton "Start Bot" en bas
         self.main_vertical_layout.addStretch()
 
         # Ajouter le bouton "Start Bot" centré
@@ -70,77 +49,68 @@ class UltimateMainWindow(PremiumMainWindow):
         self.start_button_layout.addStretch()
         self.start_button_layout.addWidget(self.start_button)
         self.start_button_layout.addStretch()
-
-        # Ajouter le layout du bouton au layout principal vertical
         self.main_vertical_layout.addLayout(self.start_button_layout)
 
-        # Ajuster la taille minimale de la fenêtre pour s'adapter aux colonnes
+        # Ajuster la taille minimale de la fenêtre
         self.setMinimumWidth(1200)
 
     def setup_general_column(self):
-        """Configure les éléments de la colonne des paramètres généraux."""
-        # Déplacer les composants dans le layout de la colonne générale
+        """Configure les éléments généraux et les ajoute directement à la disposition principale."""
         self.setup_linkedin_credentials()
-        self.general_layout.addWidget(self.username_label)
-        self.general_layout.addWidget(self.username_input)
-        self.general_layout.addWidget(self.password_label)
-        self.general_layout.addWidget(self.password_input)
+        self.main_vertical_layout.addWidget(self.username_label)
+        self.main_vertical_layout.addWidget(self.username_input)
+        self.main_vertical_layout.addWidget(self.password_label)
+        self.main_vertical_layout.addWidget(self.password_input)
 
         self.setup_search_link()
-        self.general_layout.addWidget(self.search_link_label)
-        self.general_layout.addWidget(self.search_link_input)
+        self.main_vertical_layout.addWidget(self.search_link_label)
+        self.main_vertical_layout.addWidget(self.search_link_input)
 
         self.setup_messages_per_day()
-        self.general_layout.addWidget(self.messages_per_day_label)
-        self.general_layout.addWidget(self.messages_per_day_input)
-
-        # Ajouter un espace vide pour pousser le contenu vers le haut
-        self.general_layout.addStretch()
+        self.main_vertical_layout.addWidget(self.messages_per_day_label)
+        self.main_vertical_layout.addWidget(self.messages_per_day_input)
 
     def setup_messaging_column(self):
-        """Configure les éléments de la colonne des paramètres de messagerie."""
+        """Configure les éléments de messagerie et les ajoute à la disposition principale."""
         self.setup_message_type_selection()
         # Choix du type de message
-        self.messaging_layout.addWidget(self.message_type_label)
-        self.messaging_layout.addWidget(self.normal_message_radio)
-        self.messaging_layout.addWidget(self.chatgpt_message_radio)
+        self.main_vertical_layout.addWidget(self.message_type_label)
+        self.main_vertical_layout.addWidget(self.normal_message_radio)
+        self.main_vertical_layout.addWidget(self.chatgpt_message_radio)
 
         # Messages Template A/B
         self.setup_message_templates()
-        self.messaging_layout.addWidget(self.message_a_label)
-        self.messaging_layout.addWidget(self.message_a_button)
-        self.messaging_layout.addWidget(self.message_b_label)
-        self.messaging_layout.addWidget(self.message_b_button)
+        self.main_vertical_layout.addWidget(self.message_a_label)
+        self.main_vertical_layout.addWidget(self.message_a_button)
+        self.main_vertical_layout.addWidget(self.message_b_label)
+        self.main_vertical_layout.addWidget(self.message_b_button)
 
         # Clé API OpenAI et prompt personnalisé
         self.setup_premium_ui()
-        self.messaging_layout.addWidget(self.api_key_label)
-        self.messaging_layout.addWidget(self.api_key_input)
-        self.messaging_layout.addWidget(self.prospecting_assistant_id_label)
-        self.messaging_layout.addWidget(self.prospecting_assistant_id_input)
+        self.main_vertical_layout.addWidget(self.api_key_label)
+        self.main_vertical_layout.addWidget(self.api_key_input)
+        self.main_vertical_layout.addWidget(self.prospecting_assistant_id_label)
+        self.main_vertical_layout.addWidget(self.prospecting_assistant_id_input)
 
     def setup_ultimate_column(self):
-        """Configure les éléments de la colonne des fonctionnalités Ultimate (y compris analyse de profil)."""
-        # Vérifier si l'utilisateur a une licence 'ultimate'
+        """Configure les éléments Ultimate (analyse de profil) et les ajoute à la disposition principale s'ils sont dispos."""
         if self.config.get('LICENSE_TYPE') == 'ultimate':
             # Activer les fonctionnalités Ultimate
             self.setup_ultimate_features()
 
-            # Déplacer les composants Ultimate dans le layout de la colonne Ultimate
-            self.ultimate_layout.addWidget(self.auto_reply_checkbox)
-            self.ultimate_layout.addWidget(self.auto_reply_assistant_id_label)
-            self.ultimate_layout.addWidget(self.auto_reply_assistant_id_input)
+            # Déplacer les composants Ultimate
+            self.main_vertical_layout.addWidget(self.auto_reply_checkbox)
+            self.main_vertical_layout.addWidget(self.auto_reply_assistant_id_label)
+            self.main_vertical_layout.addWidget(self.auto_reply_assistant_id_input)
 
             # Ajouter la section "Analyser les profils"
-            self.ultimate_layout.addWidget(self.analyze_profiles_checkbox)
-            self.ultimate_layout.addWidget(self.relevance_prompt_label)
-            self.ultimate_layout.addWidget(self.relevance_prompt_input)
+            self.main_vertical_layout.addWidget(self.analyze_profiles_checkbox)
+            self.main_vertical_layout.addWidget(self.relevance_prompt_label)
+            self.main_vertical_layout.addWidget(self.relevance_prompt_input)
 
             # Masquer ou afficher les champs en fonction de la case à cocher
             self.toggle_auto_reply_fields()
-        else:
-            # Si l'utilisateur n'a pas la licence 'ultimate', masquer la colonne
-            self.ultimate_column.hide()
+        # Si pas d'ultimate, rien n'est ajouté pour cette partie
 
     def setup_ultimate_features(self):
         """Ajoute les fonctionnalités spécifiques au plan Ultimate."""
@@ -152,13 +122,11 @@ class UltimateMainWindow(PremiumMainWindow):
         self.auto_reply_checkbox.stateChanged.connect(self.toggle_auto_reply_fields)
         self.main_layout.addWidget(self.auto_reply_checkbox)
 
-        # Champ pour l'assistant_id des reponses automatique
+        # Champ pour l'assistant_id des réponses automatiques
         self.auto_reply_assistant_id_label = QLabel("Assistant ID pour les réponses automatiques:")
         self.auto_reply_assistant_id_label.setFont(font)
         self.auto_reply_assistant_id_input = QLineEdit(self.config.get('AUTO_REPLY_ASSISTANT_ID', ''))
         self.auto_reply_assistant_id_input.setFont(font)
-        self.ultimate_layout.addWidget(self.auto_reply_assistant_id_label)
-        self.ultimate_layout.addWidget(self.auto_reply_assistant_id_input)
 
         # Masquer les champs de réponse automatique par défaut
         self.auto_reply_assistant_id_label.hide()
@@ -179,8 +147,6 @@ class UltimateMainWindow(PremiumMainWindow):
 
     def validate_inputs(self):
         """Valide les entrées de l'utilisateur en tenant compte du plan Ultimate, avec messages_per_day entre 0 et 30."""
-
-        # Vérification des champs de base (email, mot de passe, lien de recherche)
         username = self.username_input.text()
         password = self.password_input.text()
         search_link = self.search_link_input.text()
@@ -212,7 +178,7 @@ class UltimateMainWindow(PremiumMainWindow):
             logging.error("Erreur de saisie : Le nombre de messages par jour doit être un nombre valide !")
             return False
 
-        # Validation supplémentaire en fonction du type de message
+        # Validation supplémentaire
         if self.normal_message_radio.isChecked():
             # Vérifier que les messages Template A et B ne sont pas vides
             if not self.message_a_text or not self.message_b_text:
@@ -228,11 +194,11 @@ class UltimateMainWindow(PremiumMainWindow):
             if not api_key or not prospecting_assistant_id:
                 QMessageBox.warning(self, "Erreur de saisie",
                                     "Veuillez remplir la clé API et le prompt pour ChatGPT.")
-                logging.error("Erreur de saisie : Les champs Clé API et et l'Assistant ID de prospection doivent être remplis pour ChatGPT.")
+                logging.error("Erreur de saisie : Les champs Clé API et Assistant ID de prospection doivent être remplis.")
                 return False
 
-        # Vérifier les champs spécifiques pour les réponses automatiques si elles sont activées
-        if self.auto_reply_checkbox.isChecked():
+        # Vérifier les champs spécifiques pour les réponses automatiques
+        if hasattr(self, 'auto_reply_checkbox') and self.auto_reply_checkbox.isChecked():
             auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
             if not auto_reply_assistant_id:
                 QMessageBox.warning(self, "Erreur de saisie",
@@ -248,8 +214,13 @@ class UltimateMainWindow(PremiumMainWindow):
         super().save_configuration()
 
         # Enregistrer les paramètres Ultimate
-        auto_reply_enabled = self.auto_reply_checkbox.isChecked()
-        auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
+        auto_reply_enabled = False
+        auto_reply_assistant_id = ''
+
+        if hasattr(self, 'auto_reply_checkbox'):
+            auto_reply_enabled = self.auto_reply_checkbox.isChecked()
+        if hasattr(self, 'auto_reply_assistant_id_input'):
+            auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
 
         # Enregistrer l'état du mode test
         test_mode_enabled = self.test_mode_checkbox.isChecked()
@@ -276,31 +247,29 @@ class UltimateMainWindow(PremiumMainWindow):
             # Sauvegarder la configuration pour le type normal
             self.save_premium_configuration()
 
-        # Valider les entrées de base en tenant compte des spécificités du plan Ultimate
+        # Valider les entrées de base
         if not self.validate_inputs():
             return
 
         # Sauvegarder la configuration de base
         self.save_configuration()
 
-        # Exécuter le bot avec les fonctionnalités Ultimate
+        # Exécuter le bot
         self.run_ultimate_bot()
-
-    # def run_bot(self):
-    #     """Exécute le bot avec les fonctionnalités Ultimate."""
-    #     # Vous pouvez surcharger cette méthode pour inclure les fonctionnalités Ultimate
-    #     # ou appeler la méthode de la classe parent si elle convient
-    #     self.run_ultimate_bot()
 
     def run_ultimate_bot(self):
         """Exécute le bot avec les fonctionnalités spécifiques au plan Ultimate."""
         # Utiliser ChatGPT pour générer les messages
         openai_api_key = self.api_key_input.text()
-        auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
+        auto_reply_assistant_id = ''
+        if hasattr(self, 'auto_reply_assistant_id_input'):
+            auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
 
-        # Vérifier si l’analyse de profil est activée
-        analyze_profiles = self.analyze_profiles_checkbox.isChecked()
-        relevance_prompt = self.relevance_prompt_input.toPlainText() if analyze_profiles else None
+        analyze_profiles = False
+        relevance_prompt = None
+        if hasattr(self, 'analyze_profiles_checkbox') and self.analyze_profiles_checkbox.isChecked():
+            analyze_profiles = True
+            relevance_prompt = self.relevance_prompt_input.toPlainText()
 
         # Récupérer l'état du mode test à partir de la case à cocher
         test_mode_enabled = self.test_mode_checkbox.isChecked()
@@ -322,7 +291,7 @@ class UltimateMainWindow(PremiumMainWindow):
             chatgpt_manager=self.chatgpt_manager,
             message_type='chatgpt' if self.chatgpt_message_radio.isChecked() else 'normal',
             analyze_profiles=analyze_profiles,
-            auto_reply_enabled=self.auto_reply_checkbox.isChecked(),
+            auto_reply_enabled=(hasattr(self, 'auto_reply_checkbox') and self.auto_reply_checkbox.isChecked()),
             auto_reply_assistant_id=auto_reply_assistant_id,
             prospecting_assistant_id=self.prospecting_assistant_id_input.text(),
             test_mode_enabled=test_mode_enabled
@@ -332,7 +301,7 @@ class UltimateMainWindow(PremiumMainWindow):
         limit_reached, messages_sent = self.controller.data_manager.has_reached_message_limit(self.messages_per_day_int)
 
         # Si la limite est atteinte mais auto_reply est activé, ne pas bloquer l’exécution
-        if limit_reached and not self.auto_reply_checkbox.isChecked():
+        if limit_reached and not (hasattr(self, 'auto_reply_checkbox') and self.auto_reply_checkbox.isChecked()):
             QMessageBox.warning(
                 self, "Limite atteinte",
                 f"Le bot a déjà envoyé le nombre maximum de messages aujourd'hui ({messages_sent}/{self.messages_per_day_int})."
@@ -347,7 +316,7 @@ class UltimateMainWindow(PremiumMainWindow):
             logging.debug("Méthode run() de MainController appelée")
 
             # Si auto_reply est activé, informer que le bot reste actif pour gérer les réponses
-            if self.auto_reply_checkbox.isChecked():
+            if hasattr(self, 'auto_reply_checkbox') and self.auto_reply_checkbox.isChecked():
                 QMessageBox.information(
                     self, "Bot en cours d'exécution",
                     "Le bot a terminé l'envoi des messages de prospection.\n"
