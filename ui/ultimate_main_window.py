@@ -4,7 +4,7 @@ from controllers.main_controller import MainController
 from services.chatgpt_manager import ChatGPTManager
 from ui.premium_main_window import PremiumMainWindow
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QCheckBox, QLabel, QTextEdit, \
-    QMessageBox, QLineEdit, QHBoxLayout, QSizePolicy, QRadioButton
+    QMessageBox, QLineEdit, QHBoxLayout, QSizePolicy, QRadioButton, QButtonGroup
 import logging
 from config.config import update_config
 
@@ -127,7 +127,12 @@ class UltimateMainWindow(PremiumMainWindow):
         self.auto_reply_yes_radio.setFont(font)
         self.auto_reply_no_radio.setFont(font)
 
-        # Mise en page horizontale pour les boutons radio
+        # Créer un groupe pour les boutons radio de réponse automatique
+        self.auto_reply_group = QButtonGroup(self)
+        self.auto_reply_group.addButton(self.auto_reply_yes_radio)
+        self.auto_reply_group.addButton(self.auto_reply_no_radio)
+
+        # Mise en page verticale pour les boutons radio
         self.auto_reply_radio_layout = QVBoxLayout()
         self.auto_reply_radio_layout.addWidget(self.auto_reply_yes_radio)
         self.auto_reply_radio_layout.addWidget(self.auto_reply_no_radio)
@@ -223,19 +228,21 @@ class UltimateMainWindow(PremiumMainWindow):
 
     def save_configuration(self):
         """Sauvegarde la configuration mise à jour, y compris les paramètres Ultimate et le mode test."""
+        # Appeler la méthode de sauvegarde de la classe parent pour enregistrer la config de base
         super().save_configuration()
 
         # Déterminer si auto_reply est activé
         auto_reply_enabled = self.auto_reply_yes_radio.isChecked()
-        auto_reply_assistant_id = self.auto_reply_assistant_id_input.text() if auto_reply_enabled else ''
-
         test_mode_enabled = self.test_mode_checkbox.isChecked()
 
-        self.config.update({
-            'AUTO_REPLY_ENABLED': auto_reply_enabled,
-            'AUTO_REPLY_ASSISTANT_ID': auto_reply_assistant_id,
-            'TEST_MODE_ENABLED': test_mode_enabled,
-        })
+        # Si auto_reply est activé, on met à jour l'assistant_id avec la valeur entrée par l'utilisateur
+        if auto_reply_enabled:
+            self.config['AUTO_REPLY_ASSISTANT_ID'] = self.auto_reply_assistant_id_input.text()
+
+        # Mettre à jour l'état de l'auto_reply et du mode test
+        self.config['AUTO_REPLY_ENABLED'] = auto_reply_enabled
+        self.config['TEST_MODE_ENABLED'] = test_mode_enabled
+
         update_config(self.config)
         logging.debug("Configuration Ultimate mise à jour avec succès")
 

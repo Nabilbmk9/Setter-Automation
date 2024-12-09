@@ -1,6 +1,6 @@
 # premium_features_mixin.py
 
-from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QMessageBox, QRadioButton, QCheckBox
+from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QMessageBox, QRadioButton, QCheckBox, QButtonGroup
 from PySide6.QtGui import QFont
 from config.config import update_config
 import logging
@@ -20,14 +20,18 @@ class PremiumFeaturesMixin:
         self.message_type_label.setFont(font)
         self.main_layout.addWidget(self.message_type_label)
 
+        # Créer un groupe pour les boutons radio du choix de message
+        self.message_type_group = QButtonGroup(self)
         # Boutons radio pour le choix
         self.normal_message_radio = QRadioButton("Messages normaux (Templates A/B)")
         self.normal_message_radio.setFont(font)
         self.normal_message_radio.setChecked(True)  # Par défaut
+        self.message_type_group.addButton(self.normal_message_radio)  # Ajouter au groupe
         self.main_layout.addWidget(self.normal_message_radio)
 
         self.chatgpt_message_radio = QRadioButton("Messages personnalisés avec ChatGPT")
         self.chatgpt_message_radio.setFont(font)
+        self.message_type_group.addButton(self.chatgpt_message_radio)  # Ajouter au groupe
         self.main_layout.addWidget(self.chatgpt_message_radio)
 
         # Lire le type de message dans la configuration et ajuster le bouton sélectionné
