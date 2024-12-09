@@ -4,7 +4,7 @@ from controllers.main_controller import MainController
 from services.chatgpt_manager import ChatGPTManager
 from ui.premium_main_window import PremiumMainWindow
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QCheckBox, QLabel, QTextEdit, \
-    QMessageBox, QLineEdit, QHBoxLayout, QSizePolicy
+    QMessageBox, QLineEdit, QHBoxLayout, QSizePolicy, QRadioButton
 import logging
 from config.config import update_config
 
@@ -99,7 +99,6 @@ class UltimateMainWindow(PremiumMainWindow):
             self.setup_ultimate_features()
 
             # Déplacer les composants Ultimate
-            self.main_vertical_layout.addWidget(self.auto_reply_checkbox)
             self.main_vertical_layout.addWidget(self.auto_reply_assistant_id_label)
             self.main_vertical_layout.addWidget(self.auto_reply_assistant_id_input)
 
@@ -116,29 +115,49 @@ class UltimateMainWindow(PremiumMainWindow):
         """Ajoute les fonctionnalités spécifiques au plan Ultimate."""
         font = self.font
 
-        # Case à cocher pour activer la réponse automatique
-        self.auto_reply_checkbox = QCheckBox("Activer la réponse automatique")
-        self.auto_reply_checkbox.setFont(font)
-        self.auto_reply_checkbox.stateChanged.connect(self.toggle_auto_reply_fields)
-        self.main_layout.addWidget(self.auto_reply_checkbox)
+        # Label pour la question
+        self.auto_reply_label = QLabel("Voulez-vous que l’IA réponde automatiquement aux messages privés ?")
+        self.auto_reply_label.setFont(font)
+        self.main_vertical_layout.addWidget(self.auto_reply_label)
 
-        # Champ pour l'assistant_id des réponses automatiques
+        # Boutons radio pour Oui/Non
+        self.auto_reply_yes_radio = QRadioButton("Oui")
+        self.auto_reply_no_radio = QRadioButton("Non")
+
+        self.auto_reply_yes_radio.setFont(font)
+        self.auto_reply_no_radio.setFont(font)
+
+        # Mise en page horizontale pour les boutons radio
+        self.auto_reply_radio_layout = QVBoxLayout()
+        self.auto_reply_radio_layout.addWidget(self.auto_reply_yes_radio)
+        self.auto_reply_radio_layout.addWidget(self.auto_reply_no_radio)
+        self.main_vertical_layout.addLayout(self.auto_reply_radio_layout)
+
+        # Charger l'état depuis la configuration
+        auto_reply_enabled = self.config.get('AUTO_REPLY_ENABLED', False)
+        if auto_reply_enabled:
+            self.auto_reply_yes_radio.setChecked(True)
+        else:
+            self.auto_reply_no_radio.setChecked(True)
+
+        # Champs pour l'assistant_id des réponses automatiques
         self.auto_reply_assistant_id_label = QLabel("Assistant ID pour les réponses automatiques:")
         self.auto_reply_assistant_id_label.setFont(font)
         self.auto_reply_assistant_id_input = QLineEdit(self.config.get('AUTO_REPLY_ASSISTANT_ID', ''))
         self.auto_reply_assistant_id_input.setFont(font)
+        self.main_vertical_layout.addWidget(self.auto_reply_assistant_id_label)
+        self.main_vertical_layout.addWidget(self.auto_reply_assistant_id_input)
 
-        # Masquer les champs de réponse automatique par défaut
-        self.auto_reply_assistant_id_label.hide()
-        self.auto_reply_assistant_id_input.hide()
+        # Cacher les champs de réponse auto si non activés
+        self.toggle_auto_reply_fields()
 
-        # Charger l'état de la case à cocher depuis la configuration
-        auto_reply_enabled = self.config.get('AUTO_REPLY_ENABLED', False)
-        self.auto_reply_checkbox.setChecked(auto_reply_enabled)
+        # Connecter les boutons radio au toggle
+        self.auto_reply_yes_radio.toggled.connect(self.toggle_auto_reply_fields)
 
     def toggle_auto_reply_fields(self):
-        """Afficher ou masquer les champs de réponse automatique."""
-        if self.auto_reply_checkbox.isChecked():
+        """Afficher ou masquer les champs de réponse automatique en fonction du bouton Oui."""
+        # Si Oui est sélectionné => auto_reply_enabled = True
+        if self.auto_reply_yes_radio.isChecked():
             self.auto_reply_assistant_id_label.show()
             self.auto_reply_assistant_id_input.show()
         else:
@@ -146,19 +165,17 @@ class UltimateMainWindow(PremiumMainWindow):
             self.auto_reply_assistant_id_input.hide()
 
     def validate_inputs(self):
-        """Valide les entrées de l'utilisateur en tenant compte du plan Ultimate, avec messages_per_day entre 0 et 30."""
+        """Valide les entrées de l'utilisateur avec la nouvelle logique de réponses automatiques."""
         username = self.username_input.text()
         password = self.password_input.text()
         search_link = self.search_link_input.text()
         messages_per_day = self.messages_per_day_input.text()
 
-        # Vérifier que les champs de base sont remplis
         if not all([username, password, search_link, messages_per_day]):
             QMessageBox.warning(self, "Erreur de saisie", "Tous les champs doivent être remplis !")
             logging.error("Erreur de saisie : Tous les champs doivent être remplis !")
             return False
 
-        # Valider `messages_per_day` pour être entre 0 et 30
         try:
             self.messages_per_day_int = int(messages_per_day)
             if not (0 <= self.messages_per_day_int <= 30):
@@ -167,8 +184,7 @@ class UltimateMainWindow(PremiumMainWindow):
                     "Le nombre de messages par jour doit être entre 0 et 30 pour le plan Ultimate !"
                 )
                 logging.error(
-                    "Erreur de saisie : Le nombre de messages par jour doit être entre 0 et 30 pour le plan Ultimate !"
-                )
+                    "Erreur de saisie : Le nombre de messages par jour doit être entre 0 et 30 pour le plan Ultimate !")
                 return False
         except ValueError:
             QMessageBox.warning(
@@ -178,27 +194,24 @@ class UltimateMainWindow(PremiumMainWindow):
             logging.error("Erreur de saisie : Le nombre de messages par jour doit être un nombre valide !")
             return False
 
-        # Validation supplémentaire
+        # Validation des messages Template A et B si message normal
         if self.normal_message_radio.isChecked():
-            # Vérifier que les messages Template A et B ne sont pas vides
             if not self.message_a_text or not self.message_b_text:
                 QMessageBox.warning(self, "Erreur de saisie", "Les messages Template A et B doivent être remplis !")
                 logging.error("Erreur de saisie : Les messages Template A et B doivent être remplis !")
                 return False
-
         elif self.chatgpt_message_radio.isChecked():
-            # Vérifier que l’API Key et l'assistant id de prospection sont remplis
             api_key = self.api_key_input.text()
             prospecting_assistant_id = self.prospecting_assistant_id_input.text()
-
             if not api_key or not prospecting_assistant_id:
                 QMessageBox.warning(self, "Erreur de saisie",
                                     "Veuillez remplir la clé API et le prompt pour ChatGPT.")
-                logging.error("Erreur de saisie : Les champs Clé API et Assistant ID de prospection doivent être remplis.")
+                logging.error(
+                    "Erreur de saisie : Les champs Clé API et Assistant ID de prospection doivent être remplis.")
                 return False
 
-        # Vérifier les champs spécifiques pour les réponses automatiques
-        if hasattr(self, 'auto_reply_checkbox') and self.auto_reply_checkbox.isChecked():
+        # Vérifier le champ Assistant ID pour les réponses auto si Oui
+        if self.auto_reply_yes_radio.isChecked():
             auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
             if not auto_reply_assistant_id:
                 QMessageBox.warning(self, "Erreur de saisie",
@@ -210,19 +223,12 @@ class UltimateMainWindow(PremiumMainWindow):
 
     def save_configuration(self):
         """Sauvegarde la configuration mise à jour, y compris les paramètres Ultimate et le mode test."""
-        # Appeler la méthode de sauvegarde de la classe parent
         super().save_configuration()
 
-        # Enregistrer les paramètres Ultimate
-        auto_reply_enabled = False
-        auto_reply_assistant_id = ''
+        # Déterminer si auto_reply est activé
+        auto_reply_enabled = self.auto_reply_yes_radio.isChecked()
+        auto_reply_assistant_id = self.auto_reply_assistant_id_input.text() if auto_reply_enabled else ''
 
-        if hasattr(self, 'auto_reply_checkbox'):
-            auto_reply_enabled = self.auto_reply_checkbox.isChecked()
-        if hasattr(self, 'auto_reply_assistant_id_input'):
-            auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
-
-        # Enregistrer l'état du mode test
         test_mode_enabled = self.test_mode_checkbox.isChecked()
 
         self.config.update({
@@ -259,11 +265,9 @@ class UltimateMainWindow(PremiumMainWindow):
 
     def run_ultimate_bot(self):
         """Exécute le bot avec les fonctionnalités spécifiques au plan Ultimate."""
-        # Utiliser ChatGPT pour générer les messages
         openai_api_key = self.api_key_input.text()
-        auto_reply_assistant_id = ''
-        if hasattr(self, 'auto_reply_assistant_id_input'):
-            auto_reply_assistant_id = self.auto_reply_assistant_id_input.text()
+        auto_reply_enabled = self.auto_reply_yes_radio.isChecked()
+        auto_reply_assistant_id = self.auto_reply_assistant_id_input.text() if auto_reply_enabled else ''
 
         analyze_profiles = False
         relevance_prompt = None
@@ -271,16 +275,13 @@ class UltimateMainWindow(PremiumMainWindow):
             analyze_profiles = True
             relevance_prompt = self.relevance_prompt_input.toPlainText()
 
-        # Récupérer l'état du mode test à partir de la case à cocher
         test_mode_enabled = self.test_mode_checkbox.isChecked()
 
-        # Créer une instance de ChatGPTManager avec les paramètres appropriés
         self.chatgpt_manager = ChatGPTManager(
             api_key=openai_api_key,
             relevance_prompt_template=relevance_prompt
         )
 
-        # Créer le contrôleur avec l’assistant_id et l’option auto_reply_enabled
         self.controller = MainController(
             username=self.username_input.text(),
             password=self.password_input.text(),
@@ -291,17 +292,15 @@ class UltimateMainWindow(PremiumMainWindow):
             chatgpt_manager=self.chatgpt_manager,
             message_type='chatgpt' if self.chatgpt_message_radio.isChecked() else 'normal',
             analyze_profiles=analyze_profiles,
-            auto_reply_enabled=(hasattr(self, 'auto_reply_checkbox') and self.auto_reply_checkbox.isChecked()),
+            auto_reply_enabled=auto_reply_enabled,
             auto_reply_assistant_id=auto_reply_assistant_id,
             prospecting_assistant_id=self.prospecting_assistant_id_input.text(),
             test_mode_enabled=test_mode_enabled
         )
 
-        # Vérifier si la limite quotidienne de messages est atteinte
         limit_reached, messages_sent = self.controller.data_manager.has_reached_message_limit(self.messages_per_day_int)
 
-        # Si la limite est atteinte mais auto_reply est activé, ne pas bloquer l’exécution
-        if limit_reached and not (hasattr(self, 'auto_reply_checkbox') and self.auto_reply_checkbox.isChecked()):
+        if limit_reached and not auto_reply_enabled:
             QMessageBox.warning(
                 self, "Limite atteinte",
                 f"Le bot a déjà envoyé le nombre maximum de messages aujourd'hui ({messages_sent}/{self.messages_per_day_int})."
@@ -309,14 +308,12 @@ class UltimateMainWindow(PremiumMainWindow):
             logging.info("Limite quotidienne de messages atteinte, le bot ne démarrera pas.")
             return
 
-        # Démarrer le bot
         try:
             logging.debug("Bot démarré avec succès (Ultimate)")
             self.controller.run()
             logging.debug("Méthode run() de MainController appelée")
 
-            # Si auto_reply est activé, informer que le bot reste actif pour gérer les réponses
-            if hasattr(self, 'auto_reply_checkbox') and self.auto_reply_checkbox.isChecked():
+            if auto_reply_enabled:
                 QMessageBox.information(
                     self, "Bot en cours d'exécution",
                     "Le bot a terminé l'envoi des messages de prospection.\n"
