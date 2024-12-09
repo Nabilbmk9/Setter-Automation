@@ -1,105 +1,72 @@
-# premium_main_window.py
-
 from ui.base_main_window import BaseMainWindow
-from ui.premium_features_mixin import PremiumFeaturesMixin
-import logging
-from PySide6.QtWidgets import QMessageBox
+from ui.features.message_type_feature import MessageTypeFeature
+from ui.features.openai_settings_feature import OpenAISettingsFeature
+from ui.features.profile_analysis_feature import ProfileAnalysisFeature
 
-class PremiumMainWindow(PremiumFeaturesMixin, BaseMainWindow):
+
+class PremiumMainWindow(BaseMainWindow):
     def __init__(self):
         super().__init__()
 
+        # Initialiser les features Premium
+        self.message_type_feature = MessageTypeFeature(self, self.config_manager)
+        self.openai_settings_feature = OpenAISettingsFeature(self, self.config_manager, self.message_type_feature)
+        self.profile_analysis_feature = ProfileAnalysisFeature(self, self.config_manager, self.message_type_feature)
+
+        # setup_ui() n'est pas appelé ici pour plus de flexibilité
+
     def setup_ui(self):
-        """Configure l'UI pour les utilisateurs premium."""
-        self.setup_title()
-        self.setup_linkedin_credentials()
-        self.setup_search_link()
+        """Configure les éléments Premium dans l'ordre souhaité."""
+        # Réutiliser les features de BaseMainWindow
+        self.title_feature.setup()
+        self.linkedin_credentials_feature.setup()
+        self.search_link_feature.setup()
 
-        # Ajouter le choix du type de message juste après 'Lien de recherche'
-        self.setup_message_type_selection()
+        # Ajouter les features Premium
+        self.message_type_feature.setup()
+        self.messages_per_day_feature.setup()
+        self.message_templates_feature.setup()
+        self.openai_settings_feature.setup()
+        self.profile_analysis_feature.setup()
 
-        # Ajouter les messages Template A/B
-        self.setup_message_templates()
+        # Ajouter le bouton Start Bot en bas
+        self.setup_start_button()
 
-        # Ajouter le champ 'Messages par jour'
-        self.setup_messages_per_day()
-
-        # Ajouter les éléments premium (clé API, prompt)
-        self.setup_premium_ui()
-
-        # Si ce n'est pas un utilisateur Ultimate, ajouter le bouton 'Start Bot'
-        if self.config.get('LICENSE_TYPE') != 'ultimate':
-            self.setup_start_button()
-
-    def start_bot(self):
-        """Démarre le bot avec les fonctionnalités premium."""
-        logging.debug("Start Bot button clicked (Premium)")
-
-        # Valider les entrées premium (si ChatGPT est sélectionné)
-        if self.chatgpt_message_radio.isChecked():
-            if not self.validate_premium_inputs():
-                return
-            # Sauvegarder la configuration premium
-            self.save_premium_configuration()
+    def toggle_message_fields(self):
+        """Afficher ou cacher les widgets en fonction du type de message."""
+        if self.message_type_feature.radio_standard.isChecked():
+            self.message_templates_feature.show()
+            self.openai_settings_feature.hide()
+            self.profile_analysis_feature.hide()
         else:
-            # Sauvegarder la configuration pour le type normal
-            self.save_premium_configuration()
-
-        # Valider les entrées de base en tenant compte du type de message
-        if not self.validate_inputs():
-            return
-
-        # Sauvegarder la configuration de base
-        self.save_configuration()
-
-        # Exécuter le bot avec les fonctionnalités premium
-        self.run_premium_bot()
+            self.message_templates_feature.hide()
+            self.openai_settings_feature.show()
+            self.profile_analysis_feature.show()
 
     def validate_inputs(self):
-        """Valide les entrées de l'utilisateur en tenant compte du type de message."""
-        username = self.username_input.text()
-        password = self.password_input.text()
-        search_link = self.search_link_input.text()
-        messages_per_day = self.messages_per_day_input.text()
-
-        if not all([username, password, search_link, messages_per_day]):
-            QMessageBox.warning(self, "Erreur de saisie", "Tous les champs doivent être remplis !")
-            logging.error("Erreur de saisie : Tous les champs doivent être remplis !")
+        """Valide les champs de saisie Premium."""
+        # Valider les inputs de BaseMainWindow
+        if not super().validate_inputs():
             return False
 
-        # Valider le nombre de messages par jour
-        try:
-            self.messages_per_day_int = int(messages_per_day)
-            if self.messages_per_day_int <= 0 or self.messages_per_day_int > 30:
-                QMessageBox.warning(
-                    self, "Erreur de saisie",
-                    "Le nombre de messages par jour doit être entre 1 et 30 !"
-                )
-                logging.error(
-                    "Erreur de saisie : Le nombre de messages par jour doit être entre 1 et 30 !"
-                )
+        # Valider les inputs spécifiques à Premium
+        if self.message_type_feature.radio_gpt.isChecked():
+            if not self.openai_settings_feature.validate():
                 return False
-        except ValueError:
-            QMessageBox.warning(
-                self, "Erreur de saisie",
-                "Le nombre de messages par jour doit être un nombre valide !"
-            )
-            logging.error("Erreur de saisie : Le nombre de messages par jour doit être un nombre valide !")
-            return False
-
-        # Validation supplémentaire en fonction du type de message
-        if self.normal_message_radio.isChecked():
-            # Vérifier que les messages Template A et B ne sont pas vides
-            if not self.message_a_text or not self.message_b_text:
-                QMessageBox.warning(self, "Erreur de saisie", "Les messages Template A et B doivent être remplis !")
-                logging.error("Erreur de saisie : Les messages Template A et B doivent être remplis !")
+            if not self.profile_analysis_feature.validate():
                 return False
-        elif self.chatgpt_message_radio.isChecked():
-            # Les validations pour ChatGPT sont déjà faites dans validate_premium_inputs
-            pass
-        else:
-            QMessageBox.warning(self, "Erreur", "Type de message invalide.")
-            logging.error("Erreur : Type de message invalide.")
-            return False
 
         return True
+
+    def save_configuration(self):
+        """Sauvegarde les données de configuration Premium."""
+        # Sauvegarder les données de BaseMainWindow
+        super().save_configuration()
+
+        # Sauvegarder les données spécifiques à Premium
+        if self.message_type_feature.radio_gpt.isChecked():
+            self.openai_settings_feature.save_configuration()
+            self.profile_analysis_feature.save_configuration()
+
+        # Sauvegarder la configuration complète
+        self.config_manager.save()
