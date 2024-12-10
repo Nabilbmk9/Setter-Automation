@@ -99,6 +99,7 @@ class UltimateMainWindow(QMainWindow):
         self.auto_reply_feature.auto_reply_no_radio.toggled.connect(self.update_configure_ia_button_visibility)
 
         self.btn_configurer_messages = QPushButton("Configurer les messages")
+        self.btn_configurer_messages.setObjectName("btnConfig")
         self.btn_configurer_messages.clicked.connect(self.goto_message_config)
         self.main_layout.addWidget(self.btn_configurer_messages)
 
@@ -106,6 +107,7 @@ class UltimateMainWindow(QMainWindow):
         self.auto_reply_feature.setup()
 
         self.btn_configurer_ia = QPushButton("Configurer l'IA")
+        self.btn_configurer_ia.setObjectName("btnConfig")
         self.btn_configurer_ia.clicked.connect(self.goto_ia_config)
         self.main_layout.addWidget(self.btn_configurer_ia)
 

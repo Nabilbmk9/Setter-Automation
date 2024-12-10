@@ -75,16 +75,33 @@ def get_stylesheet():
         font-weight: bold;
         font-size: 14px;
     }
-
+    
     QPushButton#startButton {
         background-color: #ff4500;
-        border-radius: 10px;
-        font-size: 16px;
+        color: white;
+        border: 2px solid #ff4500;
+        border-radius: 20px;
         padding: 10px;
+        font-weight: bold;
+        font-size: 16px;
     }
 
     QPushButton#startButton:hover {
         background-color: #ff5714;
+    }
+    
+    QPushButton#btnConfig {
+        background-color: #7a3ef3;
+        color: white;
+        border: 2px solid #7a3ef3;
+        border-radius: 20px;
+        padding: 10px;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    QPushButton#btnConfig:hover {
+        background-color: #9662ff;
     }
     
     QPushButton#btnEnregistrer {
