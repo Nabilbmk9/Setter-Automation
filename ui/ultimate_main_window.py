@@ -102,15 +102,15 @@ class UltimateMainWindow(QMainWindow):
         self.btn_configurer_messages.clicked.connect(self.goto_message_config)
         self.main_layout.addWidget(self.btn_configurer_messages)
 
+        self.profile_analysis_feature.setup()
+        self.auto_reply_feature.setup()
+
         self.btn_configurer_ia = QPushButton("Configurer l'IA")
         self.btn_configurer_ia.clicked.connect(self.goto_ia_config)
         self.main_layout.addWidget(self.btn_configurer_ia)
 
         self.update_configure_message_button_visibility()
         self.update_configure_ia_button_visibility()
-
-        self.profile_analysis_feature.setup()
-        self.auto_reply_feature.setup()
 
         self.setup_start_button()
 

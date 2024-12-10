@@ -25,7 +25,6 @@ class IAConfigPage(QWidget):
 
         self.layout = QVBoxLayout()
         self.layout.addLayout(self.openai_settings_feature.layout)
-        self.layout.addWidget(self.test_mode_feature.test_mode_checkbox)
 
         self.layout.addLayout(self.prospecting_assistant_feature.layout)
 
@@ -34,6 +33,8 @@ class IAConfigPage(QWidget):
 
         self.layout.addWidget(self.relevance_prompt_label)
         self.layout.addWidget(self.relevance_prompt_input)
+
+        self.layout.addWidget(self.test_mode_feature.test_mode_checkbox)
 
         self.layout.addWidget(self.btn_enregistrer)
         self.layout.addWidget(self.btn_annuler)
