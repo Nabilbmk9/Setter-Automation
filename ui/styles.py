@@ -37,14 +37,21 @@ def get_stylesheet():
     }
 
     QLabel#title {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 20px;
+        font-size: 32px; /* Taille plus grande */
+        font-weight: bold; /* Texte en gras */
+        color: white; /* Couleur du texte */
+        margin-bottom: -15px; /* Espacement sous le texte */
+        padding-bottom: 5px; /* Espace interne pour le trait */
+        border-bottom: 3px solid orange; /* Trait orange sous le titre */
+        text-align: center; /* Centrer le texte */
     }
 
     QLabel#version {
         font-size: 12px;
         font-weight: normal;
+        color: white;
+        margin-top: 0px;
+        text-align: center;
     }
 
     /* === ZONES DE TEXTE === */
@@ -54,6 +61,7 @@ def get_stylesheet():
         border: 2px solid #7a3ef3;
         border-radius: 10px;
         padding: 5px;
+        margin-right: 200px;
         margin-bottom: 10px;
     }
 
@@ -82,6 +90,7 @@ def get_stylesheet():
         border: 2px solid #ff4500;
         border-radius: 20px;
         padding: 10px;
+        margin-top: 8px;
         font-weight: bold;
         font-size: 16px;
     }
@@ -96,6 +105,8 @@ def get_stylesheet():
         border: 2px solid #7a3ef3;
         border-radius: 20px;
         padding: 10px;
+        margin-left: 80px;
+        margin-right: 80px;
         font-weight: bold;
         font-size: 14px;
     }
