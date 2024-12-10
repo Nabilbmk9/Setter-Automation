@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QLabel, QRadioButton
+from PySide6.QtWidgets import QLabel, QRadioButton, QButtonGroup
 
 
 class AutoReplyFeature:
@@ -10,6 +10,10 @@ class AutoReplyFeature:
 
         self.auto_reply_yes_radio = QRadioButton("Oui")
         self.auto_reply_no_radio = QRadioButton("Non")
+
+        self.radio_group = QButtonGroup(self.parent)
+        self.radio_group.addButton(self.auto_reply_yes_radio)
+        self.radio_group.addButton(self.auto_reply_no_radio)
 
         auto_reply_enabled = self.config_manager.get('AUTO_REPLY_ENABLED', False)
         if auto_reply_enabled:
