@@ -34,6 +34,8 @@ class UltimateMainWindow(QMainWindow):
         self.message_type_feature = MessageTypeFeature(self, self.config_manager)
         self.openai_settings_feature = OpenAISettingsFeature(self, self.config_manager, self.message_type_feature)
         self.message_templates_feature = MessageTemplatesFeature(self, self.config_manager)
+        self.test_mode_feature = TestModeFeature(self, self.config_manager)
+        self.auto_reply_feature = AutoReplyFeature(self, self.config_manager)
 
         # Pages
         self.main_page = QWidget()  # Contient les fonctionnalités principales
@@ -41,9 +43,20 @@ class UltimateMainWindow(QMainWindow):
             message_templates_feature=self.message_templates_feature,
             parent=self
         )
+        # Créez la page de configuration de l'IA
         self.ia_config_page = IAConfigPage(
             openai_settings_feature=self.openai_settings_feature,
+            test_mode_feature=self.test_mode_feature,
+            auto_reply_feature=self.auto_reply_feature,
+            config_manager=self.config_manager,
             parent=self
+        )
+
+        # Connectez AutoReplyFeature pour afficher/masser les widgets de l'Assistant ID
+        self.auto_reply_feature.auto_reply_yes_radio.toggled.connect(
+            lambda: self.ia_config_page.toggle_auto_reply_fields(
+                self.auto_reply_feature.is_auto_reply_enabled()
+            )
         )
 
         # Ajout des pages au QStackedWidget
@@ -70,8 +83,6 @@ class UltimateMainWindow(QMainWindow):
         self.search_link_feature = SearchLinkFeature(self, self.config_manager)
         self.messages_per_day_feature = MessagesPerDayFeature(self, self.config_manager)
         self.profile_analysis_feature = ProfileAnalysisFeature(self, self.config_manager, self.message_type_feature)
-        self.test_mode_feature = TestModeFeature(self, self.config_manager)
-        self.auto_reply_feature = AutoReplyFeature(self, self.config_manager)
 
         # Ajouter les widgets au layout principal
         self.title_feature.setup()
@@ -112,7 +123,6 @@ class UltimateMainWindow(QMainWindow):
 
         # Ajouter d'autres fonctionnalités
         self.profile_analysis_feature.setup()
-        self.test_mode_feature.setup()
         self.auto_reply_feature.setup()
 
         self.setup_start_button()
@@ -143,6 +153,8 @@ class UltimateMainWindow(QMainWindow):
 
     def goto_ia_config(self):
         """Navigue vers la page de configuration de l'IA."""
+        # Met à jour la visibilité des widgets dans IAConfigPage
+        self.ia_config_page.update_auto_reply_fields()
         self.stacked_widget.setCurrentIndex(2)
 
     def cancel_ia_config(self):
