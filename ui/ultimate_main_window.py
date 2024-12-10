@@ -10,6 +10,7 @@ from ui.features.openai_settings_feature import OpenAISettingsFeature
 from ui.features.profile_analysis_feature import ProfileAnalysisFeature
 from ui.features.test_mode_feature import TestModeFeature
 from ui.features.auto_reply_feature import AutoReplyFeature
+from ui.features.message_templates_feature import MessageTemplatesFeature
 from utils.utils import get_resource_path
 from ui.styles import get_stylesheet
 from ui.message_config_page import MessageConfigPage
@@ -29,10 +30,21 @@ class UltimateMainWindow(QMainWindow):
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
 
+        # Création des features nécessaires
+        self.message_type_feature = MessageTypeFeature(self, self.config_manager)
+        self.openai_settings_feature = OpenAISettingsFeature(self, self.config_manager, self.message_type_feature)
+        self.message_templates_feature = MessageTemplatesFeature(self, self.config_manager)
+
         # Pages
         self.main_page = QWidget()  # Contient les fonctionnalités principales
-        self.message_config_page = MessageConfigPage(config_manager=self.config_manager, parent=self)
-        self.ia_config_page = IAConfigPage()
+        self.message_config_page = MessageConfigPage(
+            message_templates_feature=self.message_templates_feature,
+            parent=self
+        )
+        self.ia_config_page = IAConfigPage(
+            openai_settings_feature=self.openai_settings_feature,
+            parent=self
+        )
 
         # Ajout des pages au QStackedWidget
         self.stacked_widget.addWidget(self.main_page)           # index 0
@@ -57,8 +69,6 @@ class UltimateMainWindow(QMainWindow):
         self.linkedin_credentials_feature = LinkedInCredentialsFeature(self, self.config_manager)
         self.search_link_feature = SearchLinkFeature(self, self.config_manager)
         self.messages_per_day_feature = MessagesPerDayFeature(self, self.config_manager)
-        self.message_type_feature = MessageTypeFeature(self, self.config_manager)
-        self.openai_settings_feature = OpenAISettingsFeature(self, self.config_manager, self.message_type_feature)
         self.profile_analysis_feature = ProfileAnalysisFeature(self, self.config_manager, self.message_type_feature)
         self.test_mode_feature = TestModeFeature(self, self.config_manager)
         self.auto_reply_feature = AutoReplyFeature(self, self.config_manager)
@@ -92,19 +102,18 @@ class UltimateMainWindow(QMainWindow):
         self.btn_configurer_messages.clicked.connect(self.goto_message_config)
         self.main_layout.addWidget(self.btn_configurer_messages)
 
-        # Initialiser la visibilité des boutons
-        self.update_configure_message_button_visibility()
-
-        # Ajouter d'autres fonctionnalités
-        self.openai_settings_feature.setup()
-        self.profile_analysis_feature.setup()
-        self.test_mode_feature.setup()
-        self.auto_reply_feature.setup()
-
         # Ajouter le bouton "Configurer l'IA"
         self.btn_configurer_ia = QPushButton("Configurer l'IA")
         self.btn_configurer_ia.clicked.connect(self.goto_ia_config)
         self.main_layout.addWidget(self.btn_configurer_ia)
+
+        # Initialiser la visibilité des boutons
+        self.update_configure_message_button_visibility()
+
+        # Ajouter d'autres fonctionnalités
+        self.profile_analysis_feature.setup()
+        self.test_mode_feature.setup()
+        self.auto_reply_feature.setup()
 
         self.setup_start_button()
 
@@ -142,6 +151,7 @@ class UltimateMainWindow(QMainWindow):
 
     def save_ia_config(self):
         """Sauvegarde la configuration de l'IA et retourne à la page principale."""
+        self.ia_config_page.save_configuration()
         self.stacked_widget.setCurrentIndex(0)
 
     def validate_inputs(self):

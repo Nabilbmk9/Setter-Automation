@@ -1,6 +1,4 @@
-# ui/features/openai_settings_feature.py
-
-from PySide6.QtWidgets import QLabel, QLineEdit, QMessageBox
+from PySide6.QtWidgets import QLabel, QLineEdit, QVBoxLayout, QMessageBox
 
 
 class OpenAISettingsFeature:
@@ -9,6 +7,7 @@ class OpenAISettingsFeature:
         self.config_manager = config_manager
         self.message_type_feature = message_type_feature
 
+        # Widgets pour la configuration OpenAI
         self.api_key_label = QLabel("Clé API OpenAI:")
         self.api_key_input = QLineEdit(self.config_manager.get('OPENAI_API_KEY', ''))
         self.api_key_input.setEchoMode(QLineEdit.Password)
@@ -16,11 +15,16 @@ class OpenAISettingsFeature:
         self.assistant_id_label = QLabel("Assistant ID pour la prospection:")
         self.assistant_id_input = QLineEdit(self.config_manager.get('PROSPECTING_ASSISTANT_ID', ''))
 
+        # Layout interne pour organiser les widgets
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.api_key_label)
+        self.layout.addWidget(self.api_key_input)
+        self.layout.addWidget(self.assistant_id_label)
+        self.layout.addWidget(self.assistant_id_input)
+
     def setup(self):
-        self.parent.main_layout.addWidget(self.api_key_label)
-        self.parent.main_layout.addWidget(self.api_key_input)
-        self.parent.main_layout.addWidget(self.assistant_id_label)
-        self.parent.main_layout.addWidget(self.assistant_id_input)
+        """Ne fait plus rien, car le layout interne est déjà configuré."""
+        pass
 
     def validate(self):
         # Valider seulement si ChatGPT est sélectionné
@@ -31,6 +35,7 @@ class OpenAISettingsFeature:
         return True
 
     def save_configuration(self):
+        """Sauvegarde les paramètres OpenAI dans le ConfigurationManager."""
         self.config_manager.update({
             'OPENAI_API_KEY': self.api_key_input.text(),
             'PROSPECTING_ASSISTANT_ID': self.assistant_id_input.text()

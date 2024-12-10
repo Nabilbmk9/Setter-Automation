@@ -1,68 +1,36 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QMessageBox
-from ui.message_edit_dialog import MessageEditDialog
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
+from ui.features.message_templates_feature import MessageTemplatesFeature
 
 
 class MessageConfigPage(QWidget):
-    def __init__(self, config_manager, parent=None):
-        super().__init__(parent)  # Le parent est transmis correctement ici
-        self.config_manager = config_manager
+    def __init__(self, message_templates_feature, parent=None):
+        super().__init__(parent)
+        self.message_templates_feature = message_templates_feature
 
-        self.message_a_text = self.config_manager.get('MESSAGE_A', '')
-        self.message_b_text = self.config_manager.get('MESSAGE_B', '')
-
-        self.message_a_label = QLabel("Message Template A:")
-        self.message_a_button = QPushButton(self.get_message_preview(self.message_a_text))
-        self.message_a_button.setObjectName("messageButton")
-        self.message_a_button.clicked.connect(self.edit_message_a)
-
-        self.message_b_label = QLabel("Message Template B:")
-        self.message_b_button = QPushButton(self.get_message_preview(self.message_b_text))
-        self.message_b_button.setObjectName("messageButton")
-        self.message_b_button.clicked.connect(self.edit_message_b)
-
+        # Boutons Enregistrer et Annuler
         self.btn_enregistrer = QPushButton("Enregistrer")
         self.btn_annuler = QPushButton("Annuler")
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.message_a_label)
-        layout.addWidget(self.message_a_button)
-        layout.addWidget(self.message_b_label)
-        layout.addWidget(self.message_b_button)
-        layout.addWidget(self.btn_enregistrer)
-        layout.addWidget(self.btn_annuler)
+        # Layout principal
+        self.layout = QVBoxLayout()
 
-        self.setLayout(layout)
+        # Intégrer le layout de MessageTemplatesFeature
+        self.layout.addLayout(self.message_templates_feature.layout)
 
-    def get_message_preview(self, message):
-        if message:
-            return message[:50] + '...' if len(message) > 50 else message
-        return "Message vide, cliquez pour remplir"
+        # Ajouter les boutons au layout
+        self.layout.addWidget(self.btn_enregistrer)
+        self.layout.addWidget(self.btn_annuler)
 
-    def edit_message_a(self):
-        dialog = MessageEditDialog("Éditer Message Template A", self.message_a_text)
-        if dialog.exec():
-            self.message_a_text = dialog.get_text()
-            self.message_a_button.setText(self.get_message_preview(self.message_a_text))
+        self.setLayout(self.layout)
 
-    def edit_message_b(self):
-        dialog = MessageEditDialog("Éditer Message Template B", self.message_b_text)
-        if dialog.exec():
-            self.message_b_text = dialog.get_text()
-            self.message_b_button.setText(self.get_message_preview(self.message_b_text))
-
-    def save_configuration(self):
-        """Sauvegarde les messages dans le ConfigurationManager."""
-        self.config_manager.update({
-            'MESSAGE_A': self.message_a_text,
-            'MESSAGE_B': self.message_b_text
-        })
+        # Connexions
+        self.btn_enregistrer.clicked.connect(self.save_configuration)
 
     def validate(self):
-        """Valide les messages avant la sauvegarde."""
-        if not self.message_a_text or not self.message_b_text:
-            QMessageBox.warning(
-                self, "Erreur de saisie",
-                "Les messages Template A et B doivent être remplis !"
-            )
-            return False
-        return True
+        """Valide les messages via MessageTemplatesFeature."""
+        return self.message_templates_feature.validate()
+
+    def save_configuration(self):
+        """Sauvegarde les messages via MessageTemplatesFeature."""
+        if self.validate():
+            self.message_templates_feature.save_configuration()

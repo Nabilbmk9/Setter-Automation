@@ -1,28 +1,35 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QFormLayout, QLineEdit, QPlainTextEdit, QPushButton, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
 
 class IAConfigPage(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, openai_settings_feature, parent=None):
         super().__init__(parent)
+        self.openai_settings_feature = openai_settings_feature
 
-        self.api_key_edit = QLineEdit()
-        self.assistant_settings = QPlainTextEdit()
-        self.prompt_settings = QPlainTextEdit()
-
+        # Boutons Enregistrer et Annuler
         self.btn_enregistrer = QPushButton("Enregistrer")
         self.btn_annuler = QPushButton("Annuler")
 
-        form_layout = QFormLayout()
-        form_layout.addRow("API Key :", self.api_key_edit)
-        form_layout.addRow("Paramètres de l'assistant IA :", self.assistant_settings)
-        form_layout.addRow("Prompts :", self.prompt_settings)
+        # Layout principal
+        self.layout = QVBoxLayout()
 
-        main_layout = QVBoxLayout()
-        main_layout.addLayout(form_layout)
+        # Intégrer le layout d'OpenAISettingsFeature
+        self.layout.addLayout(self.openai_settings_feature.layout)
 
-        btn_layout = QHBoxLayout()
-        btn_layout.addWidget(self.btn_enregistrer)
-        btn_layout.addWidget(self.btn_annuler)
-        main_layout.addLayout(btn_layout)
+        # Ajouter les boutons au layout
+        self.layout.addWidget(self.btn_enregistrer)
+        self.layout.addWidget(self.btn_annuler)
 
-        self.setLayout(main_layout)
+        self.setLayout(self.layout)
+
+        # Connexions
+        self.btn_enregistrer.clicked.connect(self.save_configuration)
+
+    def validate(self):
+        """Valide les paramètres OpenAI via OpenAISettingsFeature."""
+        return self.openai_settings_feature.validate()
+
+    def save_configuration(self):
+        """Sauvegarde les paramètres OpenAI via OpenAISettingsFeature."""
+        if self.validate():
+            self.openai_settings_feature.save_configuration()
