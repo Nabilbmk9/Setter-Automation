@@ -27,7 +27,9 @@ class IAConfigPage(QWidget):
         self.btn_annuler.setObjectName("btnAnnuler")
 
         self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(15, 15, 15, 15)  # Ajout de marges spécifiques pour cette page
         self.layout.addLayout(self.openai_settings_feature.layout)
+        self.layout.addLayout(self.prospecting_assistant_feature.layout)
 
         self.layout.addLayout(self.prospecting_assistant_feature.layout)
 

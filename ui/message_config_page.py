@@ -16,6 +16,7 @@ class MessageConfigPage(QWidget):
 
         # Layout principal
         self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(15, 15, 15, 15)
 
         # Intégrer le layout de MessageTemplatesFeature
         self.layout.addLayout(self.message_templates_feature.layout)

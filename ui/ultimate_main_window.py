@@ -27,9 +27,18 @@ class UltimateMainWindow(QMainWindow):
         self.setWindowIcon(QIcon(get_resource_path("ui/resources/logo3d.png")))
         self.setStyleSheet(get_stylesheet())
 
+        # Encapsulation dans un widget central
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        # Layout principal pour le central widget avec des marges
+        self.central_layout = QVBoxLayout()
+        self.central_layout.setContentsMargins(30, 20, 30, 20)  # Marges : gauche, haut, droite, bas
+        central_widget.setLayout(self.central_layout)
+
         # Gestionnaire de pages
         self.stacked_widget = QStackedWidget()
-        self.setCentralWidget(self.stacked_widget)
+        self.central_layout.addWidget(self.stacked_widget)
 
         # Création des features nécessaires (une seule fois)
         self.message_type_feature = MessageTypeFeature(self, self.config_manager)
