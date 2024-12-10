@@ -1,5 +1,8 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QTextEdit, QMessageBox
 
+from ui.features.prospecting_assistant_feature import ProspectingAssistantFeature
+
+
 class IAConfigPage(QWidget):
     def __init__(self, openai_settings_feature, test_mode_feature, auto_reply_feature, profile_analysis_feature, config_manager, parent=None):
         super().__init__(parent)
@@ -8,6 +11,8 @@ class IAConfigPage(QWidget):
         self.auto_reply_feature = auto_reply_feature
         self.profile_analysis_feature = profile_analysis_feature
         self.config_manager = config_manager
+
+        self.prospecting_assistant_feature = ProspectingAssistantFeature(self, config_manager)
 
         self.auto_reply_assistant_id_label = QLabel("Assistant ID pour les réponses automatiques:")
         self.auto_reply_assistant_id_input = QLineEdit()
@@ -21,6 +26,8 @@ class IAConfigPage(QWidget):
         self.layout = QVBoxLayout()
         self.layout.addLayout(self.openai_settings_feature.layout)
         self.layout.addWidget(self.test_mode_feature.test_mode_checkbox)
+
+        self.layout.addLayout(self.prospecting_assistant_feature.layout)
 
         self.layout.addWidget(self.auto_reply_assistant_id_label)
         self.layout.addWidget(self.auto_reply_assistant_id_input)
@@ -40,6 +47,11 @@ class IAConfigPage(QWidget):
         self.auto_reply_assistant_id_input.setVisible(False)
         self.relevance_prompt_label.setVisible(False)
         self.relevance_prompt_input.setVisible(False)
+
+    def update_prospecting_fields(self, is_custom_message_selected):
+        """Affiche ou masque l'Assistant ID selon le type de message."""
+        self.prospecting_assistant_feature.assistant_id_label.setVisible(is_custom_message_selected)
+        self.prospecting_assistant_feature.assistant_id_input.setVisible(is_custom_message_selected)
 
     def update_auto_reply_fields(self):
         enabled = self.auto_reply_feature.is_auto_reply_enabled()

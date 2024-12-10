@@ -11,10 +11,12 @@ from ui.features.profile_analysis_feature import ProfileAnalysisFeature
 from ui.features.test_mode_feature import TestModeFeature
 from ui.features.auto_reply_feature import AutoReplyFeature
 from ui.features.message_templates_feature import MessageTemplatesFeature
-from utils.utils import get_resource_path
+from ui.features.prospecting_assistant_feature import ProspectingAssistantFeature
 from ui.styles import get_stylesheet
 from ui.message_config_page import MessageConfigPage
 from ui.ia_config_page import IAConfigPage
+from utils.utils import get_resource_path
+
 
 class UltimateMainWindow(QMainWindow):
     def __init__(self):
@@ -31,7 +33,8 @@ class UltimateMainWindow(QMainWindow):
 
         # Création des features nécessaires (une seule fois)
         self.message_type_feature = MessageTypeFeature(self, self.config_manager)
-        self.openai_settings_feature = OpenAISettingsFeature(self, self.config_manager, self.message_type_feature)
+        self.openai_settings_feature = OpenAISettingsFeature(self, self.config_manager)
+        self.prospecting_assistant_feature = ProspectingAssistantFeature(self, self.config_manager)
         self.message_templates_feature = MessageTemplatesFeature(self, self.config_manager)
         self.test_mode_feature = TestModeFeature(self, self.config_manager)
         self.auto_reply_feature = AutoReplyFeature(self, self.config_manager)
@@ -121,6 +124,9 @@ class UltimateMainWindow(QMainWindow):
             self.auto_reply_feature.is_auto_reply_enabled()
         )
         self.btn_configurer_ia.setVisible(show_configure_ia)
+
+        # Mise à jour des champs dans la page IA
+        self.ia_config_page.update_prospecting_fields(self.radio_message_custom.isChecked())
 
     def goto_message_config(self):
         self.stacked_widget.setCurrentIndex(1)
