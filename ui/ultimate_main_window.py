@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QStackedWidget
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QStackedWidget, QLabel, QRadioButton, QButtonGroup
 from PySide6.QtGui import QIcon
 from config.configuration_manager import ConfigurationManager
 from ui.features.title_feature import TitleFeature
@@ -31,7 +31,7 @@ class UltimateMainWindow(QMainWindow):
 
         # Pages
         self.main_page = QWidget()  # Contient les fonctionnalités principales
-        self.message_config_page = MessageConfigPage(config_manager=self.config_manager, parent=self)  # Inclut la gestion des messages
+        self.message_config_page = MessageConfigPage(config_manager=self.config_manager, parent=self)
         self.ia_config_page = IAConfigPage()
 
         # Ajout des pages au QStackedWidget
@@ -68,22 +68,49 @@ class UltimateMainWindow(QMainWindow):
         self.linkedin_credentials_feature.setup()
         self.search_link_feature.setup()
         self.messages_per_day_feature.setup()
-        self.message_type_feature.setup()
+
+        # Ajouter la section "Type de message à envoyer"
+        type_label = QLabel("Type de message à envoyer :")
+        self.main_layout.addWidget(type_label)
+
+        # Ajouter les boutons radio
+        self.radio_button_group = QButtonGroup(self)
+        self.radio_message_normal = QRadioButton("Messages normaux")
+        self.radio_message_custom = QRadioButton("Messages personnalisés")
+        self.radio_button_group.addButton(self.radio_message_normal)
+        self.radio_button_group.addButton(self.radio_message_custom)
+
+        # Ajouter les boutons radio au layout
+        self.main_layout.addWidget(self.radio_message_normal)
+        self.main_layout.addWidget(self.radio_message_custom)
+
+        # Connecter les boutons radio au gestionnaire de visibilité
+        self.radio_message_normal.toggled.connect(self.update_configure_message_button_visibility)
+
+        # Ajouter le bouton "Configurer les messages"
+        self.btn_configurer_messages = QPushButton("Configurer les messages")
+        self.btn_configurer_messages.clicked.connect(self.goto_message_config)
+        self.main_layout.addWidget(self.btn_configurer_messages)
+
+        # Initialiser la visibilité des boutons
+        self.update_configure_message_button_visibility()
+
+        # Ajouter d'autres fonctionnalités
         self.openai_settings_feature.setup()
         self.profile_analysis_feature.setup()
         self.test_mode_feature.setup()
         self.auto_reply_feature.setup()
 
-        # Ajouter les boutons de navigation
-        self.btn_configurer_messages = QPushButton("Configurer les messages")
-        self.btn_configurer_messages.clicked.connect(self.goto_message_config)
-        self.main_layout.addWidget(self.btn_configurer_messages)
-
+        # Ajouter le bouton "Configurer l'IA"
         self.btn_configurer_ia = QPushButton("Configurer l'IA")
         self.btn_configurer_ia.clicked.connect(self.goto_ia_config)
         self.main_layout.addWidget(self.btn_configurer_ia)
 
         self.setup_start_button()
+
+    def update_configure_message_button_visibility(self):
+        """Met à jour la visibilité du bouton 'Configurer les messages'."""
+        self.btn_configurer_messages.setVisible(self.radio_message_normal.isChecked())
 
     def setup_start_button(self):
         """Ajoute le bouton de démarrage."""
