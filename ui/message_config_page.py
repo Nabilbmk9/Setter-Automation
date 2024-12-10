@@ -4,7 +4,7 @@ from ui.message_edit_dialog import MessageEditDialog
 
 class MessageConfigPage(QWidget):
     def __init__(self, config_manager, parent=None):
-        super().__init__(parent)
+        super().__init__(parent)  # Le parent est transmis correctement ici
         self.config_manager = config_manager
 
         self.message_a_text = self.config_manager.get('MESSAGE_A', '')
@@ -47,4 +47,22 @@ class MessageConfigPage(QWidget):
     def edit_message_b(self):
         dialog = MessageEditDialog("Éditer Message Template B", self.message_b_text)
         if dialog.exec():
-            self.message_b
+            self.message_b_text = dialog.get_text()
+            self.message_b_button.setText(self.get_message_preview(self.message_b_text))
+
+    def save_configuration(self):
+        """Sauvegarde les messages dans le ConfigurationManager."""
+        self.config_manager.update({
+            'MESSAGE_A': self.message_a_text,
+            'MESSAGE_B': self.message_b_text
+        })
+
+    def validate(self):
+        """Valide les messages avant la sauvegarde."""
+        if not self.message_a_text or not self.message_b_text:
+            QMessageBox.warning(
+                self, "Erreur de saisie",
+                "Les messages Template A et B doivent être remplis !"
+            )
+            return False
+        return True
