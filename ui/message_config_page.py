@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout
 from ui.features.message_templates_feature import MessageTemplatesFeature
 
 
@@ -11,6 +11,9 @@ class MessageConfigPage(QWidget):
         self.btn_enregistrer = QPushButton("Enregistrer")
         self.btn_annuler = QPushButton("Annuler")
 
+        self.btn_enregistrer.setObjectName("btnEnregistrer")
+        self.btn_annuler.setObjectName("btnAnnuler")
+
         # Layout principal
         self.layout = QVBoxLayout()
 
@@ -18,8 +21,10 @@ class MessageConfigPage(QWidget):
         self.layout.addLayout(self.message_templates_feature.layout)
 
         # Ajouter les boutons au layout
-        self.layout.addWidget(self.btn_enregistrer)
-        self.layout.addWidget(self.btn_annuler)
+        self.buttons_layout = QHBoxLayout()
+        self.buttons_layout.addWidget(self.btn_enregistrer)
+        self.buttons_layout.addWidget(self.btn_annuler)
+        self.layout.addLayout(self.buttons_layout)
 
         self.setLayout(self.layout)
 
