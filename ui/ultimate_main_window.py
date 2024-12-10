@@ -16,7 +16,6 @@ from ui.styles import get_stylesheet
 from ui.message_config_page import MessageConfigPage
 from ui.ia_config_page import IAConfigPage
 
-
 class UltimateMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -30,21 +29,20 @@ class UltimateMainWindow(QMainWindow):
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
 
-        # Création des features nécessaires
+        # Création des features nécessaires (une seule fois)
         self.message_type_feature = MessageTypeFeature(self, self.config_manager)
         self.openai_settings_feature = OpenAISettingsFeature(self, self.config_manager, self.message_type_feature)
         self.message_templates_feature = MessageTemplatesFeature(self, self.config_manager)
-        self.profile_analysis_feature = ProfileAnalysisFeature(self, self.config_manager)
         self.test_mode_feature = TestModeFeature(self, self.config_manager)
         self.auto_reply_feature = AutoReplyFeature(self, self.config_manager)
+        self.profile_analysis_feature = ProfileAnalysisFeature(self, self.config_manager)
 
         # Pages
-        self.main_page = QWidget()  # Contient les fonctionnalités principales
+        self.main_page = QWidget()
         self.message_config_page = MessageConfigPage(
             message_templates_feature=self.message_templates_feature,
             parent=self
         )
-        # Créez la page de configuration de l'IA
         self.ia_config_page = IAConfigPage(
             openai_settings_feature=self.openai_settings_feature,
             test_mode_feature=self.test_mode_feature,
@@ -54,132 +52,116 @@ class UltimateMainWindow(QMainWindow):
             parent=self
         )
 
-        # Ajout des pages au QStackedWidget
         self.stacked_widget.addWidget(self.main_page)           # index 0
         self.stacked_widget.addWidget(self.message_config_page) # index 1
         self.stacked_widget.addWidget(self.ia_config_page)      # index 2
 
-        # Initialisation de la page principale
         self.main_layout = QVBoxLayout()
         self.main_page.setLayout(self.main_layout)
         self.init_main_page_features()
 
-        # Connexions entre les pages
         self.message_config_page.btn_enregistrer.clicked.connect(self.save_message_config)
         self.message_config_page.btn_annuler.clicked.connect(self.cancel_message_config)
         self.ia_config_page.btn_enregistrer.clicked.connect(self.save_ia_config)
         self.ia_config_page.btn_annuler.clicked.connect(self.cancel_ia_config)
 
     def init_main_page_features(self):
-        """Initialise les fonctionnalités principales."""
-        # Initialiser toutes les features
         self.title_feature = TitleFeature(self, self.config_manager)
         self.linkedin_credentials_feature = LinkedInCredentialsFeature(self, self.config_manager)
         self.search_link_feature = SearchLinkFeature(self, self.config_manager)
         self.messages_per_day_feature = MessagesPerDayFeature(self, self.config_manager)
 
-
-        # Ajouter les widgets au layout principal
         self.title_feature.setup()
         self.linkedin_credentials_feature.setup()
         self.search_link_feature.setup()
         self.messages_per_day_feature.setup()
 
-        # Ajouter la section "Type de message à envoyer"
         type_label = QLabel("Type de message à envoyer :")
         self.main_layout.addWidget(type_label)
 
-        # Ajouter les boutons radio
         self.radio_button_group = QButtonGroup(self)
         self.radio_message_normal = QRadioButton("Messages normaux")
         self.radio_message_custom = QRadioButton("Messages personnalisés")
         self.radio_button_group.addButton(self.radio_message_normal)
         self.radio_button_group.addButton(self.radio_message_custom)
 
-        # Ajouter les boutons radio au layout
         self.main_layout.addWidget(self.radio_message_normal)
         self.main_layout.addWidget(self.radio_message_custom)
 
-        # Connecter les boutons radio au gestionnaire de visibilité
+        # Connecter les événements
         self.radio_message_normal.toggled.connect(self.update_configure_message_button_visibility)
+        self.radio_message_custom.toggled.connect(self.update_configure_ia_button_visibility)
+        self.profile_analysis_feature.analysis_yes_radio.toggled.connect(self.update_configure_ia_button_visibility)
+        self.auto_reply_feature.auto_reply_yes_radio.toggled.connect(self.update_configure_ia_button_visibility)
+        self.auto_reply_feature.auto_reply_no_radio.toggled.connect(self.update_configure_ia_button_visibility)
 
-        # Ajouter le bouton "Configurer les messages"
         self.btn_configurer_messages = QPushButton("Configurer les messages")
         self.btn_configurer_messages.clicked.connect(self.goto_message_config)
         self.main_layout.addWidget(self.btn_configurer_messages)
 
-        # Ajouter le bouton "Configurer l'IA"
         self.btn_configurer_ia = QPushButton("Configurer l'IA")
         self.btn_configurer_ia.clicked.connect(self.goto_ia_config)
         self.main_layout.addWidget(self.btn_configurer_ia)
 
-        # Initialiser la visibilité des boutons
         self.update_configure_message_button_visibility()
+        self.update_configure_ia_button_visibility()
 
-        # Ajouter d'autres fonctionnalités
         self.profile_analysis_feature.setup()
         self.auto_reply_feature.setup()
 
         self.setup_start_button()
 
     def update_configure_message_button_visibility(self):
-        """Met à jour la visibilité du bouton 'Configurer les messages'."""
         self.btn_configurer_messages.setVisible(self.radio_message_normal.isChecked())
 
-    def setup_start_button(self):
-        """Ajoute le bouton de démarrage."""
-        self.start_button = QPushButton("Start Bot")
-        self.start_button.setObjectName("startButton")
-        self.start_button.clicked.connect(self.start_bot)
-        self.main_layout.addWidget(self.start_button)
+    def update_configure_ia_button_visibility(self):
+        show_configure_ia = (
+            self.radio_message_custom.isChecked() or
+            self.profile_analysis_feature.is_analysis_enabled() or
+            self.auto_reply_feature.is_auto_reply_enabled()
+        )
+        self.btn_configurer_ia.setVisible(show_configure_ia)
 
     def goto_message_config(self):
-        """Navigue vers la page de configuration des messages."""
         self.stacked_widget.setCurrentIndex(1)
 
     def cancel_message_config(self):
-        """Annule la configuration des messages et retourne à la page principale."""
         self.stacked_widget.setCurrentIndex(0)
 
     def save_message_config(self):
-        """Sauvegarde la configuration des messages et retourne à la page principale."""
         self.message_config_page.save_configuration()
         self.stacked_widget.setCurrentIndex(0)
 
     def goto_ia_config(self):
+        # Mettre à jour les champs avant d'afficher la page
         self.ia_config_page.update_auto_reply_fields()
         self.ia_config_page.update_analysis_fields()
         self.stacked_widget.setCurrentIndex(2)
 
     def cancel_ia_config(self):
-        """Annule la configuration de l'IA et retourne à la page principale."""
         self.stacked_widget.setCurrentIndex(0)
 
     def save_ia_config(self):
-        """Sauvegarde la configuration de l'IA et retourne à la page principale."""
         self.ia_config_page.save_configuration()
         self.stacked_widget.setCurrentIndex(0)
 
     def validate_inputs(self):
-        """Valide les champs Ultimate."""
-        if self.message_type_feature.radio_gpt.isChecked():
-            if not self.openai_settings_feature.validate():
-                return False
-            if not self.profile_analysis_feature.validate():
-                return False
-        if self.auto_reply_feature.radio_yes.isChecked():
-            if not self.auto_reply_feature.validate():
-                return False
+        # Validation standard si besoin
         return True
 
     def save_configuration(self):
-        """Sauvegarde les données de configuration Ultimate."""
         self.config_manager.save()
         self.test_mode_feature.save_configuration()
         self.auto_reply_feature.save_configuration()
+        self.profile_analysis_feature.save_configuration()
+
+    def setup_start_button(self):
+        self.start_button = QPushButton("Start Bot")
+        self.start_button.setObjectName("startButton")
+        self.start_button.clicked.connect(self.start_bot)
+        self.main_layout.addWidget(self.start_button)
 
     def start_bot(self):
-        """Lance le bot si les données sont valides."""
         if not self.validate_inputs():
             return
         self.save_configuration()
