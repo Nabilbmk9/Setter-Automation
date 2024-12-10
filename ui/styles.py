@@ -86,6 +86,34 @@ def get_stylesheet():
     QPushButton#startButton:hover {
         background-color: #ff5714;
     }
+    
+    QPushButton#btnEnregistrer {
+        background-color: #ff4500;
+        color: white;
+        border: 2px solid #ff4500;
+        border-radius: 20px;
+        padding: 10px;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    QPushButton#btnEnregistrer:hover {
+        background-color: #ff5714;
+    }
+
+    QPushButton#btnAnnuler {
+        background-color: #7a3ef3;
+        color: white;
+        border: 2px solid #7a3ef3;
+        border-radius: 20px;
+        padding: 10px;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    QPushButton#btnAnnuler:hover {
+        background-color: #9662ff;
+    }
 
     /* === RADIO & CHECKBOX === */
     QRadioButton, QCheckBox {

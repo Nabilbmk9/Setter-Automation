@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QTextEdit, QMessageBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QTextEdit, QMessageBox, QHBoxLayout
 
 from ui.features.prospecting_assistant_feature import ProspectingAssistantFeature
 
@@ -23,6 +23,9 @@ class IAConfigPage(QWidget):
         self.btn_enregistrer = QPushButton("Enregistrer")
         self.btn_annuler = QPushButton("Annuler")
 
+        self.btn_enregistrer.setObjectName("btnEnregistrer")
+        self.btn_annuler.setObjectName("btnAnnuler")
+
         self.layout = QVBoxLayout()
         self.layout.addLayout(self.openai_settings_feature.layout)
 
@@ -36,8 +39,10 @@ class IAConfigPage(QWidget):
 
         self.layout.addWidget(self.test_mode_feature.test_mode_checkbox)
 
-        self.layout.addWidget(self.btn_enregistrer)
-        self.layout.addWidget(self.btn_annuler)
+        self.buttons_layout = QHBoxLayout()
+        self.buttons_layout.addWidget(self.btn_enregistrer)
+        self.buttons_layout.addWidget(self.btn_annuler)
+        self.layout.addLayout(self.buttons_layout)
 
         self.setLayout(self.layout)
 
