@@ -53,6 +53,21 @@ def get_stylesheet():
         margin-top: 0px;
         text-align: center;
     }
+    
+    QLabel#subtitle {
+    font-size: 18px; 
+    font-weight: bold;
+    color: white; 
+    margin-top: 50px;
+    margin-bottom: 10px;
+    }
+    
+    QLabel#subtitleText {
+    font-size: 12px;
+    font-weight: normal;
+    color: white;
+    margin-bottom: 10px;
+    }
 
     /* === ZONES DE TEXTE === */
     QLineEdit {
@@ -113,6 +128,10 @@ def get_stylesheet():
 
     QPushButton#btnConfig:hover {
         background-color: #9662ff;
+    }
+    
+    QPushButton#messageButton {
+        margin-bottom: 40px;
     }
     
     QPushButton#btnEnregistrer {
@@ -198,5 +217,9 @@ def get_stylesheet():
 
     QDialog QPushButton:hover {
         background-color: #ff5714;
+    }
+    
+    QLabel#messageLabel {
+        margin-top: 40px;
     }
     """

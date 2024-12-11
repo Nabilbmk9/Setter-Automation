@@ -21,13 +21,18 @@ class IAConfigPage(QWidget):
         self.title_feature = TitleFeature(self, config_manager)
         self.title_feature.add_to_layout(self.layout)
 
-        self.prospecting_assistant_feature = ProspectingAssistantFeature(self, config_manager)
+        # Sous-titre
+        subtitle_label = QLabel("Configuration des parametres chatGPT")
+        subtitle_label.setObjectName("subtitle")
+        self.layout.addWidget(subtitle_label)
 
-        self.auto_reply_assistant_id_label = QLabel("Assistant ID pour les réponses automatiques:")
-        self.auto_reply_assistant_id_input = QLineEdit()
+        self.prospecting_assistant_feature = ProspectingAssistantFeature(self, config_manager)
 
         self.relevance_prompt_label = QLabel("Prompt pour l'analyse des profils:")
         self.relevance_prompt_input = QTextEdit()
+
+        self.auto_reply_assistant_id_label = QLabel("Assistant ID pour les réponses automatiques:")
+        self.auto_reply_assistant_id_input = QLineEdit()
 
         self.btn_enregistrer = QPushButton("Enregistrer")
         self.btn_annuler = QPushButton("Annuler")
@@ -49,6 +54,7 @@ class IAConfigPage(QWidget):
         self.layout.addWidget(self.test_mode_feature.test_mode_checkbox)
 
         self.buttons_layout = QHBoxLayout()
+        self.layout.addStretch()
         self.buttons_layout.addWidget(self.btn_enregistrer)
         self.buttons_layout.addWidget(self.btn_annuler)
         self.layout.addLayout(self.buttons_layout)

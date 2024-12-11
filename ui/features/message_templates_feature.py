@@ -12,11 +12,13 @@ class MessageTemplatesFeature:
 
         # Widgets pour les messages
         self.message_a_label = QLabel("Message Template A:")
+        self.message_a_label.setObjectName("messageLabel")
         self.message_a_button = QPushButton(self.get_message_preview(self.message_a_text))
         self.message_a_button.setObjectName("messageButton")
         self.message_a_button.clicked.connect(self.edit_message_a)
 
         self.message_b_label = QLabel("Message Template B:")
+        self.message_b_label.setObjectName("messageLabel")
         self.message_b_button = QPushButton(self.get_message_preview(self.message_b_text))
         self.message_b_button.setObjectName("messageButton")
         self.message_b_button.clicked.connect(self.edit_message_b)

@@ -116,8 +116,8 @@ class UltimateMainWindow(QMainWindow):
         self.main_layout.addWidget(type_label)
 
         self.radio_button_group = QButtonGroup(self)
-        self.radio_message_normal = QRadioButton("Messages normaux")
-        self.radio_message_custom = QRadioButton("Messages personnalisés")
+        self.radio_message_normal = QRadioButton("Message standard (avec variables)")
+        self.radio_message_custom = QRadioButton("Message personnalisé avec Chatgpt")
         self.radio_button_group.addButton(self.radio_message_normal)
         self.radio_button_group.addButton(self.radio_message_custom)
 
@@ -131,7 +131,7 @@ class UltimateMainWindow(QMainWindow):
         self.auto_reply_feature.auto_reply_yes_radio.toggled.connect(self.update_configure_ia_button_visibility)
         self.auto_reply_feature.auto_reply_no_radio.toggled.connect(self.update_configure_ia_button_visibility)
 
-        self.btn_configurer_messages = QPushButton("Configurer les messages")
+        self.btn_configurer_messages = QPushButton("Configurer les messages à envoyer")
         self.btn_configurer_messages.setObjectName("btnConfig")
         self.btn_configurer_messages.clicked.connect(self.goto_message_config)
         self.main_layout.addWidget(self.btn_configurer_messages)
@@ -139,7 +139,7 @@ class UltimateMainWindow(QMainWindow):
         self.profile_analysis_feature.setup()
         self.auto_reply_feature.setup()
 
-        self.btn_configurer_ia = QPushButton("Configurer l'IA")
+        self.btn_configurer_ia = QPushButton("Configurer les parametres chatGPT")
         self.btn_configurer_ia.setObjectName("btnConfig")
         self.btn_configurer_ia.clicked.connect(self.goto_ia_config)
         self.main_layout.addWidget(self.btn_configurer_ia)

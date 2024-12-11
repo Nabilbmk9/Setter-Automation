@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QLabel
 from ui.features.message_templates_feature import MessageTemplatesFeature
 from ui.features.title_feature import TitleFeature
 
@@ -10,11 +10,33 @@ class MessageConfigPage(QWidget):
 
         # Initialiser le layout principal
         self.layout = QVBoxLayout()
-        self.layout.setContentsMargins(15, 5, 15, 15) # Gauche, haut, droite, bas
+        self.layout.setContentsMargins(15, 5, 15, 15)  # Gauche, haut, droite, bas
 
         # Intégrer le titre
         self.title_feature = TitleFeature(self, config_manager)
         self.title_feature.add_to_layout(self.layout)
+
+        # Sous-titre
+        subtitle_label = QLabel("Configuration Message standard")
+        subtitle_label.setObjectName("subtitle")
+        self.layout.addWidget(subtitle_label)
+
+        # Texte explicatif
+        variables_label = QLabel(
+            "Vous pouvez utiliser des variables pour personnaliser votre message.<br>"
+            "Variables disponibles : <span style='color: #ff4500;'>{first_name}</span> et "
+            "<span style='color: #ff4500;'>{last_name}</span>.<br>"
+            "<br>"
+            "⚠ Il faut que la variable soit exactement écrite de la même façon."
+        )
+        variables_label.setObjectName("subtitleText")
+        variables_label.setWordWrap(True)  # Permet de couper le texte automatiquement si la largeur est limitée
+        self.layout.addWidget(variables_label)
+
+        # Intégrer le layout de MessageTemplatesFeature
+        self.layout.addLayout(self.message_templates_feature.layout)
+
+        self.layout.addStretch()
 
         # Boutons Enregistrer et Annuler
         self.btn_enregistrer = QPushButton("Enregistrer")
@@ -22,9 +44,6 @@ class MessageConfigPage(QWidget):
 
         self.btn_enregistrer.setObjectName("btnEnregistrer")
         self.btn_annuler.setObjectName("btnAnnuler")
-
-        # Intégrer le layout de MessageTemplatesFeature
-        self.layout.addLayout(self.message_templates_feature.layout)
 
         # Ajouter les boutons au layout
         self.buttons_layout = QHBoxLayout()

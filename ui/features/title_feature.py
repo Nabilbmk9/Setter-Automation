@@ -27,4 +27,3 @@ class TitleFeature:
         layout.addWidget(self.title_label)
         layout.addWidget(self.version_label)
         layout.addSpacing(20)
-        layout.addStretch(1)
