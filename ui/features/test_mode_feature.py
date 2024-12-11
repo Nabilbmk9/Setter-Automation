@@ -8,7 +8,7 @@ class TestModeFeature:
         self.config_manager = config_manager
 
         # Question pour activer le mode test
-        self.question_label = QLabel("Voulez-vous activer le mode test ?    ⓘ")
+        self.question_label = QLabel("Voulez-vous activer le mode test ?    ℹ️")
         self.question_label.setCursor(Qt.PointingHandCursor)  # Ajoute un curseur interactif
 
         # Connecter l'événement de la souris pour afficher le tooltip
