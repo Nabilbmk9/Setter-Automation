@@ -3,12 +3,9 @@
 from PySide6.QtWidgets import QLabel
 from PySide6.QtCore import Qt
 
+
 class TitleFeature:
     def __init__(self, parent, config_manager=None):
-        """
-        parent : Fenêtre parente où le titre sera affiché.
-        config_manager : Optionnel. Permet de charger une version dynamique si nécessaire.
-        """
         self.parent = parent
         self.title_label = QLabel("Bot LinkedIn")
         self.title_label.setAlignment(Qt.AlignCenter)
@@ -19,9 +16,15 @@ class TitleFeature:
         self.version_label.setObjectName("version")
 
     def setup(self):
-        """
-        Ajoute le titre et le label de version au layout principal.
-        """
+        """Ajoute le titre et le label de version au layout principal."""
         self.parent.main_layout.addWidget(self.title_label)
         self.parent.main_layout.addWidget(self.version_label)
-        self.parent.main_layout.addSpacing(30)
+        self.parent.main_layout.addSpacing(20)
+
+    def add_to_layout(self, layout):
+        """Ajoute le titre et la version à un layout spécifique."""
+
+        layout.addWidget(self.title_label)
+        layout.addWidget(self.version_label)
+        layout.addSpacing(20)
+        layout.addStretch(1)

@@ -121,6 +121,7 @@ def get_stylesheet():
         border: 2px solid #ff4500;
         border-radius: 20px;
         padding: 10px;
+        margin-top: 8px;
         font-weight: bold;
         font-size: 14px;
     }
@@ -135,6 +136,7 @@ def get_stylesheet():
         border: 2px solid #7a3ef3;
         border-radius: 20px;
         padding: 10px;
+        margin-top: 8px;
         font-weight: bold;
         font-size: 14px;
     }

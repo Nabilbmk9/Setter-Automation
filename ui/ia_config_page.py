@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit, QTextEdit, QMessageBox, QHBoxLayout
 
 from ui.features.prospecting_assistant_feature import ProspectingAssistantFeature
+from ui.features.title_feature import TitleFeature
 
 
 class IAConfigPage(QWidget):
@@ -11,6 +12,14 @@ class IAConfigPage(QWidget):
         self.auto_reply_feature = auto_reply_feature
         self.profile_analysis_feature = profile_analysis_feature
         self.config_manager = config_manager
+
+        # Initialiser le layout principal
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(15, 5, 15, 15) # Gauche, haut, droite, bas
+
+        # Intégrer le titre
+        self.title_feature = TitleFeature(self, config_manager)
+        self.title_feature.add_to_layout(self.layout)
 
         self.prospecting_assistant_feature = ProspectingAssistantFeature(self, config_manager)
 
@@ -26,8 +35,6 @@ class IAConfigPage(QWidget):
         self.btn_enregistrer.setObjectName("btnEnregistrer")
         self.btn_annuler.setObjectName("btnAnnuler")
 
-        self.layout = QVBoxLayout()
-        self.layout.setContentsMargins(15, 15, 15, 15)  # Ajout de marges spécifiques pour cette page
         self.layout.addLayout(self.openai_settings_feature.layout)
         self.layout.addLayout(self.prospecting_assistant_feature.layout)
 

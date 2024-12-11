@@ -38,7 +38,7 @@ class UltimateMainWindow(QMainWindow):
 
         # Layout principal pour le central widget avec des marges
         self.central_layout = QVBoxLayout()
-        self.central_layout.setContentsMargins(30, 10, 30, 20)  # Marges : gauche, haut, droite, bas
+        self.central_layout.setContentsMargins(15, 5, 15, 15)  # Marges : gauche, haut, droite, bas
         central_widget.setLayout(self.central_layout)
 
         # Gestionnaire de pages
