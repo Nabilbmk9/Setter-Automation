@@ -51,7 +51,7 @@ class IAConfigPage(QWidget):
         self.layout.addWidget(self.relevance_prompt_label)
         self.layout.addWidget(self.relevance_prompt_input)
 
-        self.layout.addWidget(self.test_mode_feature.test_mode_checkbox)
+        self.layout.addLayout(self.test_mode_feature.layout)
 
         self.buttons_layout = QHBoxLayout()
         self.layout.addStretch()
