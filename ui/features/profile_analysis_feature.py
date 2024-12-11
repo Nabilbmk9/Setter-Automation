@@ -6,6 +6,7 @@ class ProfileAnalysisFeature:
         self.config_manager = config_manager
 
         self.analysis_label = QLabel("Voulez-vous analyser les profils avant d'envoyer les messages ?")
+        self.analysis_label.setWordWrap(True)
 
         self.analysis_yes_radio = QRadioButton("Oui")
         self.analysis_no_radio = QRadioButton("Non")

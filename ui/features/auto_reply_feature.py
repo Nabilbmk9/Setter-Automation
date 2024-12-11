@@ -6,6 +6,7 @@ class AutoReplyFeature:
         self.config_manager = config_manager
 
         self.auto_reply_label = QLabel("Voulez-vous que l’IA réponde automatiquement aux messages privés ?")
+        self.auto_reply_label.setWordWrap(True)
 
         self.auto_reply_yes_radio = QRadioButton("Oui")
         self.auto_reply_no_radio = QRadioButton("Non")
