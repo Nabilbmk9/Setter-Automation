@@ -61,7 +61,7 @@ def get_stylesheet():
         border: 2px solid #7a3ef3;
         border-radius: 10px;
         padding: 5px;
-        margin-right: 200px;
+        margin-right: 50px;
         margin-bottom: 10px;
     }
 
@@ -88,8 +88,8 @@ def get_stylesheet():
         background-color: #ff4500;
         color: white;
         border: 2px solid #ff4500;
-        border-radius: 20px;
-        padding: 10px;
+        border-radius: 15px;
+        padding: 8px;
         margin-top: 8px;
         font-weight: bold;
         font-size: 16px;
@@ -103,10 +103,10 @@ def get_stylesheet():
         background-color: #7a3ef3;
         color: white;
         border: 2px solid #7a3ef3;
-        border-radius: 20px;
-        padding: 10px;
-        margin-left: 80px;
-        margin-right: 80px;
+        border-radius: 10px;
+        padding: 6px;
+        margin-left: 40px;
+        margin-right: 40px;
         font-weight: bold;
         font-size: 14px;
     }

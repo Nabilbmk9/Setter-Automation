@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QStackedWidget, QLabel, QRadioButton, QButtonGroup
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QGuiApplication
 from config.configuration_manager import ConfigurationManager
 from ui.features.title_feature import TitleFeature
 from ui.features.linkedin_credentials_feature import LinkedInCredentialsFeature
@@ -27,13 +27,18 @@ class UltimateMainWindow(QMainWindow):
         self.setWindowIcon(QIcon(get_resource_path("ui/resources/logo3d.png")))
         self.setStyleSheet(get_stylesheet())
 
+        # Fixer la taille de la fenêtre
+        self.setFixedSize(400, 850)  # Largeur : 800px, Hauteur : 600px
+
+        self.position_window()
+
         # Encapsulation dans un widget central
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
         # Layout principal pour le central widget avec des marges
         self.central_layout = QVBoxLayout()
-        self.central_layout.setContentsMargins(30, 20, 30, 20)  # Marges : gauche, haut, droite, bas
+        self.central_layout.setContentsMargins(30, 10, 30, 20)  # Marges : gauche, haut, droite, bas
         central_widget.setLayout(self.central_layout)
 
         # Gestionnaire de pages
@@ -76,6 +81,25 @@ class UltimateMainWindow(QMainWindow):
         self.message_config_page.btn_annuler.clicked.connect(self.cancel_message_config)
         self.ia_config_page.btn_enregistrer.clicked.connect(self.save_ia_config)
         self.ia_config_page.btn_annuler.clicked.connect(self.cancel_ia_config)
+
+    def position_window(self):
+        """Positionne la fenêtre au centre en haut de l'écran avec une marge."""
+        screen = QGuiApplication.primaryScreen()
+        screen_geometry = screen.geometry()
+
+        # Dimensions de l'écran
+        screen_width = screen_geometry.width()
+        screen_height = screen_geometry.height()
+
+        # Dimensions de la fenêtre
+        window_width = self.frameGeometry().width()  # Utiliser la taille réelle de la fenêtre, y compris les bordures
+        window_height = self.frameGeometry().height()
+
+        # Calcul des coordonnées
+        x = (screen_width - window_width) // 2  # Centrer la fenêtre horizontalement
+        y = 20  # Petite marge depuis le haut
+
+        self.move(x, y)
 
     def init_main_page_features(self):
         self.title_feature = TitleFeature(self, self.config_manager)
