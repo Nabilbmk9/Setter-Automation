@@ -191,8 +191,9 @@ class UltimateMainWindow(QMainWindow):
         self.stacked_widget.setCurrentIndex(0)
 
     def save_message_config(self):
-        if self.message_config_page.save_configuration():
-            self.stacked_widget.setCurrentIndex(0)
+        if not self.message_config_page.save_configuration():
+            return
+        self.stacked_widget.setCurrentIndex(0)
 
     def goto_ia_config(self):
         # Recharger la configuration avant d'afficher la page IA

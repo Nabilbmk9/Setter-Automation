@@ -46,8 +46,6 @@ class MessageConfigPage(QWidget):
 
         self.setLayout(self.layout)
 
-        self.btn_enregistrer.clicked.connect(self.save_configuration)
-
     def validate(self):
         # Ne pas afficher de message ici
         return self.message_templates_feature.validate()

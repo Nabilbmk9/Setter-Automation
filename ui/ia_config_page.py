@@ -57,8 +57,6 @@ class IAConfigPage(QWidget):
 
         self.setLayout(self.layout)
 
-        self.btn_enregistrer.clicked.connect(self.save_configuration)
-
         # Par défaut, caché
         self.auto_reply_assistant_id_label.setVisible(False)
         self.auto_reply_assistant_id_input.setVisible(False)
