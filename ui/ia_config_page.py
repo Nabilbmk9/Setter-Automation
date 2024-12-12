@@ -113,3 +113,5 @@ class IAConfigPage(QWidget):
                 self.config_manager.update({
                     'RELEVANCE_PROMPT': self.relevance_prompt_input.toPlainText().strip()
                 })
+
+            self.config_manager.save()

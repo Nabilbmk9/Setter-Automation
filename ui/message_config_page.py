@@ -7,6 +7,7 @@ class MessageConfigPage(QWidget):
     def __init__(self, message_templates_feature, parent=None, config_manager=None):
         super().__init__(parent)
         self.message_templates_feature = message_templates_feature
+        self.config_manager = config_manager
 
         # Initialiser le layout principal
         self.layout = QVBoxLayout()
@@ -64,3 +65,4 @@ class MessageConfigPage(QWidget):
         """Sauvegarde les messages via MessageTemplatesFeature."""
         if self.validate():
             self.message_templates_feature.save_configuration()
+            self.config_manager.save()

@@ -98,4 +98,5 @@ class ConfigurationManager:
 
         with open(self.config_file_path, 'w') as f:
             json.dump(self.config, f, indent=4)
+        self.config = self._load_config()
         logging.debug(f"Configuration saved to {self.config_file_path}")

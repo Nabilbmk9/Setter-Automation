@@ -58,6 +58,7 @@ class UltimateMainWindow(QMainWindow):
         self.main_page = QWidget()
         self.message_config_page = MessageConfigPage(
             message_templates_feature=self.message_templates_feature,
+            config_manager=self.config_manager,
             parent=self
         )
         self.ia_config_page = IAConfigPage(
