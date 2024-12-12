@@ -125,6 +125,27 @@ class UltimateMainWindow(QMainWindow):
         self.main_layout.addWidget(self.radio_message_normal)
         self.main_layout.addWidget(self.radio_message_custom)
 
+        # Charger depuis la config ou mettre des valeurs par défaut
+        message_type = self.config_manager.get('MESSAGE_TYPE', 'normal')
+        if message_type == 'custom':
+            self.radio_message_custom.setChecked(True)
+        else:
+            self.radio_message_normal.setChecked(True)  # Par défaut "normal"
+
+        self.profile_analysis_feature.setup()
+        self.auto_reply_feature.setup()
+
+        # Charger depuis la config ou mettre des valeurs par défaut
+        analysis_enabled = self.profile_analysis_feature.is_analysis_enabled()
+        auto_reply_enabled = self.auto_reply_feature.is_auto_reply_enabled()
+
+        # Si c'est la première fois (pas de config), on force les valeurs par défaut
+        if self.config_manager.get('ANALYSIS_ENABLED') is None:
+            self.profile_analysis_feature.analysis_no_radio.setChecked(True)
+
+        if self.config_manager.get('AUTO_REPLY_ENABLED') is None:
+            self.auto_reply_feature.auto_reply_no_radio.setChecked(True)
+
         # Connecter les événements
         self.radio_message_normal.toggled.connect(self.update_configure_message_button_visibility)
         self.radio_message_custom.toggled.connect(self.update_configure_ia_button_visibility)
@@ -136,9 +157,6 @@ class UltimateMainWindow(QMainWindow):
         self.btn_configurer_messages.setObjectName("btnConfig")
         self.btn_configurer_messages.clicked.connect(self.goto_message_config)
         self.main_layout.addWidget(self.btn_configurer_messages)
-
-        self.profile_analysis_feature.setup()
-        self.auto_reply_feature.setup()
 
         self.btn_configurer_ia = QPushButton("Configurer les parametres chatGPT")
         self.btn_configurer_ia.setObjectName("btnConfig")

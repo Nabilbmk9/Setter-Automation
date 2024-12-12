@@ -104,6 +104,8 @@ class IAConfigPage(QWidget):
             self.openai_settings_feature.save_configuration()
             self.test_mode_feature.save_configuration()
 
+            self.prospecting_assistant_feature.save_configuration()
+
             if self.auto_reply_feature.is_auto_reply_enabled():
                 self.config_manager.update({
                     'AUTO_REPLY_ASSISTANT_ID': self.auto_reply_assistant_id_input.text().strip()
