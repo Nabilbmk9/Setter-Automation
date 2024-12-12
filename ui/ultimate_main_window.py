@@ -183,27 +183,28 @@ class UltimateMainWindow(QMainWindow):
         self.ia_config_page.update_prospecting_fields(self.radio_message_custom.isChecked())
 
     def goto_message_config(self):
+        # Recharger la configuration avant d'afficher la page
+        self.message_templates_feature.reload_configuration()
         self.stacked_widget.setCurrentIndex(1)
 
     def cancel_message_config(self):
         self.stacked_widget.setCurrentIndex(0)
 
     def save_message_config(self):
-        self.message_config_page.save_configuration()
-        self.stacked_widget.setCurrentIndex(0)
+        if self.message_config_page.save_configuration():
+            self.stacked_widget.setCurrentIndex(0)
 
     def goto_ia_config(self):
-        # Mettre à jour les champs avant d'afficher la page
-        self.ia_config_page.update_auto_reply_fields()
-        self.ia_config_page.update_analysis_fields()
+        # Recharger la configuration avant d'afficher la page IA
+        self.ia_config_page.reload_configuration()
         self.stacked_widget.setCurrentIndex(2)
 
     def cancel_ia_config(self):
         self.stacked_widget.setCurrentIndex(0)
 
     def save_ia_config(self):
-        self.ia_config_page.save_configuration()
-        self.stacked_widget.setCurrentIndex(0)
+        if self.ia_config_page.save_configuration():
+            self.stacked_widget.setCurrentIndex(0)
 
     def validate_inputs(self):
         # Validation standard si besoin

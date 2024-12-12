@@ -35,3 +35,10 @@ class AutoReplyFeature:
 
     def get_assistant_id(self):
         return self.config_manager.get('AUTO_REPLY_ASSISTANT_ID', '')
+
+    def reload_configuration(self):
+        auto_reply_enabled = self.config_manager.get('AUTO_REPLY_ENABLED', False)
+        if auto_reply_enabled:
+            self.auto_reply_yes_radio.setChecked(True)
+        else:
+            self.auto_reply_no_radio.setChecked(True)

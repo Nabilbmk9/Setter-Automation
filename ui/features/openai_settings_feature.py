@@ -32,3 +32,8 @@ class OpenAISettingsFeature:
         self.config_manager.update({
             'OPENAI_API_KEY': self.api_key_input.text().strip()
         })
+
+    def reload_configuration(self):
+        """Recharge la clé API depuis le ConfigurationManager."""
+        api_key = self.config_manager.get('OPENAI_API_KEY', '')
+        self.api_key_input.setText(api_key)

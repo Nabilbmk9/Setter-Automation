@@ -63,3 +63,10 @@ class TestModeFeature:
     def is_test_mode_enabled(self):
         """Renvoie True si le mode test est activé."""
         return self.yes_radio_button.isChecked()
+
+    def reload_configuration(self):
+        test_mode_enabled = self.config_manager.get('TEST_MODE_ENABLED', False)
+        if test_mode_enabled:
+            self.yes_radio_button.setChecked(True)
+        else:
+            self.no_radio_button.setChecked(True)

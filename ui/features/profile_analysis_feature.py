@@ -32,3 +32,11 @@ class ProfileAnalysisFeature:
     def save_configuration(self):
         analyze_profiles = self.analysis_yes_radio.isChecked()
         self.config_manager.update({'ANALYZE_PROFILES': analyze_profiles})
+
+    def reload_configuration(self):
+        analyze_profiles = self.config_manager.get('ANALYZE_PROFILES', False)
+        if analyze_profiles:
+            self.analysis_yes_radio.setChecked(True)
+        else:
+            self.analysis_no_radio.setChecked(True)
+            
