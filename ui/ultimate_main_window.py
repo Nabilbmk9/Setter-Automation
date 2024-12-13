@@ -1,4 +1,7 @@
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QStackedWidget, QLabel, QRadioButton, QButtonGroup
+import logging
+
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QStackedWidget, QLabel, QRadioButton, \
+    QButtonGroup, QMessageBox
 from PySide6.QtGui import QIcon, QGuiApplication
 from config.configuration_manager import ConfigurationManager
 from ui.features.title_feature import TitleFeature
@@ -208,14 +211,26 @@ class UltimateMainWindow(QMainWindow):
             self.stacked_widget.setCurrentIndex(0)
 
     def validate_inputs(self):
-        # Validation standard si besoin
+        # Liste des validations
+        validations = [
+            self.linkedin_credentials_feature.validate,
+            self.search_link_feature.validate,
+            self.messages_per_day_feature.validate,
+            self.message_templates_feature.validate
+        ]
+        for validate in validations:
+            if not validate():
+                return False
         return True
 
     def save_configuration(self):
-        self.config_manager.save()
+        self.linkedin_credentials_feature.save_configuration()
+        self.messages_per_day_feature.save_configuration()
+        self.search_link_feature.save_configuration()
         self.test_mode_feature.save_configuration()
         self.auto_reply_feature.save_configuration()
         self.profile_analysis_feature.save_configuration()
+        self.config_manager.save()
 
     def setup_start_button(self):
         self.start_button = QPushButton("Start Bot")
@@ -226,5 +241,83 @@ class UltimateMainWindow(QMainWindow):
     def start_bot(self):
         if not self.validate_inputs():
             return
+
+        # Sauvegarder la configuration
         self.save_configuration()
-        print("Bot démarré")
+
+        # Récupérer les données depuis le config_manager
+        username = self.config_manager.get('LINKEDIN_EMAIL', '')
+        password = self.config_manager.get('LINKEDIN_PASSWORD', '')
+        search_link = self.config_manager.get('LINKEDIN_SEARCH_LINK', '')
+        messages_per_day = self.config_manager.get('MESSAGES_PER_DAY', 20)
+        message_a = self.config_manager.get('MESSAGE_A', '')
+        message_b = self.config_manager.get('MESSAGE_B', '')
+
+        # Déterminer le type de message
+        message_type = 'custom' if self.radio_message_custom.isChecked() else 'normal'
+
+        analyze_profiles = self.profile_analysis_feature.is_analysis_enabled()
+        relevance_prompt = self.config_manager.get('RELEVANCE_PROMPT', '') if analyze_profiles else None
+
+        auto_reply_enabled = self.auto_reply_feature.is_auto_reply_enabled()
+        auto_reply_assistant_id = self.config_manager.get('AUTO_REPLY_ASSISTANT_ID', '')
+        prospecting_assistant_id = self.config_manager.get('PROSPECTING_ASSISTANT_ID', '')
+        test_mode_enabled = self.config_manager.get('TEST_MODE_ENABLED', False)
+
+        openai_api_key = self.config_manager.get('OPENAI_API_KEY', '')
+
+        # Instancier le ChatGPTManager si nécessaire
+        chatgpt_manager = None
+        if message_type == 'custom' or analyze_profiles or auto_reply_enabled:
+            # Import adapter en fonction de votre structure de projet
+            from services.chatgpt_manager import ChatGPTManager
+            chatgpt_manager = ChatGPTManager(
+                api_key=openai_api_key,
+                relevance_prompt_template=relevance_prompt
+            )
+
+        # Importer MainController (adapter le chemin selon votre structure)
+        from controllers.main_controller import MainController
+
+        controller = MainController(
+            username=username,
+            password=password,
+            search_link=search_link,
+            messages_per_day=messages_per_day,
+            message_a=message_a,
+            message_b=message_b,
+            chatgpt_manager=chatgpt_manager,
+            message_type='chatgpt' if message_type == 'custom' else message_type,
+            analyze_profiles=analyze_profiles,
+            auto_reply_enabled=auto_reply_enabled,
+            auto_reply_assistant_id=auto_reply_assistant_id,
+            prospecting_assistant_id=prospecting_assistant_id,
+            test_mode_enabled=test_mode_enabled
+        )
+
+        # Optionnel : Vérifier la limite quotidienne
+        # Cette logique suppose que data_manager est accessible via controller
+        limit_reached, messages_sent = controller.data_manager.has_reached_message_limit(messages_per_day)
+        if limit_reached and not auto_reply_enabled:
+            QMessageBox.warning(
+                self, "Limite atteinte",
+                f"Le bot a déjà envoyé le nombre maximum de messages aujourd'hui ({messages_sent}/{messages_per_day})."
+            )
+            return
+
+        # Démarrer le bot
+        try:
+            controller.run()
+            if auto_reply_enabled:
+                QMessageBox.information(
+                    self, "Bot en cours d'exécution",
+                    "Le bot a terminé l'envoi des messages de prospection.\n"
+                    "Il continue à gérer les réponses automatiques.\n"
+                    "Vous pouvez fermer l'application pour arrêter le bot."
+                )
+            else:
+                QMessageBox.information(self, "Fin du bot", "Le bot a terminé son exécution.")
+        except Exception as e:
+            logging.error(f"Erreur lors de l'exécution du bot: {e}")
+            QMessageBox.critical(self, "Erreur critique", f"Une erreur est survenue : {e}")
+
