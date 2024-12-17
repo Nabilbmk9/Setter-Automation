@@ -70,3 +70,19 @@ class TestModeFeature:
             self.yes_radio_button.setChecked(True)
         else:
             self.no_radio_button.setChecked(True)
+
+    def set_enabled_based_on_message_type(self, is_custom):
+        """Met à jour la visibilité et l'état du mode test en fonction du type de message."""
+        if not is_custom:
+            # Forcer le mode test à False
+            self.no_radio_button.setChecked(True)
+
+            # Cacher les widgets du test mode
+            self.question_label.setVisible(False)
+            self.yes_radio_button.setVisible(False)
+            self.no_radio_button.setVisible(False)
+        else:
+            # Afficher les widgets du test mode
+            self.question_label.setVisible(True)
+            self.yes_radio_button.setVisible(True)
+            self.no_radio_button.setVisible(True)

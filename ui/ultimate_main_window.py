@@ -185,6 +185,7 @@ class UltimateMainWindow(QMainWindow):
 
         # Mise à jour des champs dans la page IA
         self.ia_config_page.update_prospecting_fields(self.radio_message_custom.isChecked())
+        self.test_mode_feature.set_enabled_based_on_message_type(self.radio_message_custom.isChecked())
 
     def goto_message_config(self):
         # Recharger la configuration avant d'afficher la page
