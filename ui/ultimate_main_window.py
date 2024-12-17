@@ -115,49 +115,20 @@ class UltimateMainWindow(QMainWindow):
         self.linkedin_credentials_feature.setup()
         self.search_link_feature.setup()
         self.messages_per_day_feature.setup()
-
-        type_label = QLabel("Type de message à envoyer :")
-        self.main_layout.addWidget(type_label)
-
-        self.radio_button_group = QButtonGroup(self)
-        self.radio_message_normal = QRadioButton("Message standard (avec variables)")
-        self.radio_message_custom = QRadioButton("Message personnalisé avec Chatgpt")
-        self.radio_button_group.addButton(self.radio_message_normal)
-        self.radio_button_group.addButton(self.radio_message_custom)
-
-        self.main_layout.addWidget(self.radio_message_normal)
-        self.main_layout.addWidget(self.radio_message_custom)
-
-
-        # Charger depuis la config ou mettre des valeurs par défaut
-        message_type = self.config_manager.get('MESSAGE_TYPE', 'normal')
-        if message_type == 'custom':
-            self.radio_message_custom.setChecked(True)
-        else:
-            self.radio_message_normal.setChecked(True)  # Par défaut "normal"
+        self.message_type_feature.setup()
 
         self.btn_configurer_messages = QPushButton("Configurer les messages à envoyer")
         self.btn_configurer_messages.setObjectName("btnConfig")
         self.btn_configurer_messages.clicked.connect(self.goto_message_config)
         self.main_layout.addWidget(self.btn_configurer_messages)
 
+        # Initialisation de l'analyse de profil et auto-réponse
         self.profile_analysis_feature.setup()
         self.auto_reply_feature.setup()
 
-        # Charger depuis la config ou mettre des valeurs par défaut
-        analysis_enabled = self.profile_analysis_feature.is_analysis_enabled()
-        auto_reply_enabled = self.auto_reply_feature.is_auto_reply_enabled()
-
-        # Si c'est la première fois (pas de config), on force les valeurs par défaut
-        if self.config_manager.get('ANALYSIS_ENABLED') is None:
-            self.profile_analysis_feature.analysis_no_radio.setChecked(True)
-
-        if self.config_manager.get('AUTO_REPLY_ENABLED') is None:
-            self.auto_reply_feature.auto_reply_no_radio.setChecked(True)
-
-        # Connecter les événements
-        self.radio_message_normal.toggled.connect(self.update_configure_message_button_visibility)
-        self.radio_message_custom.toggled.connect(self.update_configure_ia_button_visibility)
+        # Connexions pour mettre à jour l'affichage en fonction du type de message, de l'analyse, etc.
+        self.message_type_feature.normal_message_radio.toggled.connect(self.update_configure_message_button_visibility)
+        self.message_type_feature.chatgpt_message_radio.toggled.connect(self.update_configure_ia_button_visibility)
         self.profile_analysis_feature.analysis_yes_radio.toggled.connect(self.update_configure_ia_button_visibility)
         self.auto_reply_feature.auto_reply_yes_radio.toggled.connect(self.update_configure_ia_button_visibility)
         self.auto_reply_feature.auto_reply_no_radio.toggled.connect(self.update_configure_ia_button_visibility)
@@ -173,19 +144,20 @@ class UltimateMainWindow(QMainWindow):
         self.setup_start_button()
 
     def update_configure_message_button_visibility(self):
-        self.btn_configurer_messages.setVisible(self.radio_message_normal.isChecked())
+        # Le bouton de configuration des messages standard n'est visible que si l'on n'utilise pas ChatGPT
+        self.btn_configurer_messages.setVisible(not self.message_type_feature.is_chatgpt_selected())
 
     def update_configure_ia_button_visibility(self):
         show_configure_ia = (
-            self.radio_message_custom.isChecked() or
-            self.profile_analysis_feature.is_analysis_enabled() or
-            self.auto_reply_feature.is_auto_reply_enabled()
+                self.message_type_feature.is_chatgpt_selected() or
+                self.profile_analysis_feature.is_analysis_enabled() or
+                self.auto_reply_feature.is_auto_reply_enabled()
         )
         self.btn_configurer_ia.setVisible(show_configure_ia)
 
         # Mise à jour des champs dans la page IA
-        self.ia_config_page.update_prospecting_fields(self.radio_message_custom.isChecked())
-        self.test_mode_feature.set_enabled_based_on_message_type(self.radio_message_custom.isChecked())
+        self.ia_config_page.update_prospecting_fields(self.message_type_feature.is_chatgpt_selected())
+        self.test_mode_feature.set_enabled_based_on_message_type(self.message_type_feature.is_chatgpt_selected())
 
     def goto_message_config(self):
         # Recharger la configuration avant d'afficher la page
@@ -232,6 +204,10 @@ class UltimateMainWindow(QMainWindow):
         self.test_mode_feature.save_configuration()
         self.auto_reply_feature.save_configuration()
         self.profile_analysis_feature.save_configuration()
+
+        # Sauvegarde du type de message via le message_type_feature
+        self.message_type_feature.save_configuration()
+
         self.config_manager.save()
 
     def setup_start_button(self):
@@ -256,7 +232,7 @@ class UltimateMainWindow(QMainWindow):
         message_b = self.config_manager.get('MESSAGE_B', '')
 
         # Déterminer le type de message
-        message_type = 'custom' if self.radio_message_custom.isChecked() else 'normal'
+        message_type = 'custom' if self.message_type_feature.chatgpt_message_radio.isChecked() else 'normal'
 
         analyze_profiles = self.profile_analysis_feature.is_analysis_enabled()
         relevance_prompt = self.config_manager.get('RELEVANCE_PROMPT', '') if analyze_profiles else None
