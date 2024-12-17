@@ -286,7 +286,7 @@ class MainController:
                 continue
 
             no_new_message_count = 0  # Réinitialiser si un message est trouvé
-            check_interval = 20  # Revenir à 2 minutes
+            check_interval = 120  # Revenir à 2 minutes
 
             # Traiter la première conversation seulement
             conversation = unread_conversations[0]
