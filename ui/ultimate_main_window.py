@@ -230,6 +230,7 @@ class UltimateMainWindow(QMainWindow):
         messages_per_day = self.config_manager.get('MESSAGES_PER_DAY', 20)
         message_a = self.config_manager.get('MESSAGE_A', '')
         message_b = self.config_manager.get('MESSAGE_B', '')
+        use_ab_testing = self.config_manager.get('USE_AB_TESTING', False)
 
         # Déterminer le type de message
         message_type = 'custom' if self.message_type_feature.chatgpt_message_radio.isChecked() else 'normal'
@@ -264,6 +265,7 @@ class UltimateMainWindow(QMainWindow):
             messages_per_day=messages_per_day,
             message_a=message_a,
             message_b=message_b,
+            use_ab_testing=use_ab_testing,
             chatgpt_manager=chatgpt_manager,
             message_type='chatgpt' if message_type == 'custom' else message_type,
             analyze_profiles=analyze_profiles,

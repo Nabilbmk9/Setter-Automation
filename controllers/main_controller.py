@@ -20,7 +20,7 @@ class MainController:
         self, username, password, search_link, messages_per_day,
         message_a=None, message_b=None, chatgpt_manager=None, message_type='normal', analyze_profiles=False,
         auto_reply_enabled=False, auto_reply_assistant_id=None, prospecting_assistant_id=None,
-        test_mode_enabled=False
+        test_mode_enabled=False,  use_ab_testing=False,
     ):
         logging.info("Initializing MainController")
         self.browser_manager = None
@@ -30,6 +30,7 @@ class MainController:
         self.messages_per_day = messages_per_day
         self.message_a = message_a
         self.message_b = message_b
+        self.use_ab_testing = use_ab_testing
         self.chatgpt_manager = chatgpt_manager
         self.message_type = message_type
         self.analyze_profiles = analyze_profiles
@@ -178,10 +179,13 @@ class MainController:
                     # Générer le message en fonction du type de message
                     try:
                         if self.message_type == 'normal':
-                            next_message, self.message_toggle = get_next_message(
-                                self.message_a, self.message_b, self.message_toggle
-                            )
-                            # Remplacer les variables dans le message
+                            if self.use_ab_testing:
+                                next_message, self.message_toggle = get_next_message(
+                                    self.message_a, self.message_b, self.message_toggle
+                                )
+                            else:
+                                # Pas d'A/B testing, on utilise toujours le message A
+                                next_message = self.message_a
                             generated_message = next_message.format(**profile_data)
                         elif self.message_type == 'chatgpt':
                             if not self.chatgpt_manager or not self.prospecting_assistant_id:
