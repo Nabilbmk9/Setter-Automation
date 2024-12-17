@@ -11,7 +11,7 @@ class TitleFeature:
         self.title_label.setAlignment(Qt.AlignCenter)
         self.title_label.setObjectName("title")
 
-        self.version_label = QLabel(f"Version {config_manager.get('VERSION', '1.0')}" if config_manager else "Version 1.0")
+        self.version_label = QLabel(f"Version {config_manager.get('VERSION', '1.2.0')}" if config_manager else "Version 1.0")
         self.version_label.setAlignment(Qt.AlignCenter)
         self.version_label.setObjectName("version")
 
