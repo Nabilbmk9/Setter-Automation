@@ -12,11 +12,13 @@ class MessageTemplatesFeature:
         self.use_ab_testing = self.config_manager.get('USE_AB_TESTING', False)
 
         self.message_a_label = QLabel("Message Template A:")
+        self.message_a_label.setObjectName("messageConfig")
         self.message_a_button = QPushButton(self.get_message_preview(self.message_a_text))
         self.message_a_button.clicked.connect(self.edit_message_a)
 
         # Question pour l'A/B testing
         self.ab_label = QLabel("Voulez-vous envoyer deux variantes de message grâce à l'A/B testing ?")
+        self.ab_label.setObjectName("messageConfig")
         self.ab_label.setWordWrap(True)
 
         # Boutons Oui/Non
@@ -38,6 +40,7 @@ class MessageTemplatesFeature:
         self.ab_yes.toggled.connect(self.on_ab_toggle)
 
         self.message_b_label = QLabel("Message Template B (A/B):")
+        self.message_b_label.setObjectName("messageConfig")
         self.message_b_button = QPushButton(self.get_message_preview(self.message_b_text))
         self.message_b_button.clicked.connect(self.edit_message_b)
 

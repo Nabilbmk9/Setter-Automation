@@ -2,13 +2,14 @@
 
 from PySide6.QtWidgets import QLabel, QRadioButton, QButtonGroup, QVBoxLayout, QWidget
 
+
 class MessageTypeFeature:
     def __init__(self, parent, config_manager):
         self.parent = parent
         self.config_manager = config_manager
 
         self.message_type_label = QLabel("Type de message à envoyer:")
-        self.normal_message_radio = QRadioButton("Messages normaux (Templates A/B)")
+        self.normal_message_radio = QRadioButton("Message standard (avec variables)")
         self.chatgpt_message_radio = QRadioButton("Messages personnalisés avec ChatGPT")
 
         # Chargement de la config existante

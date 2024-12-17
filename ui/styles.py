@@ -87,6 +87,10 @@ def get_stylesheet():
         border-radius: 10px;
         padding: 5px;
     }
+    
+    QLabel#messageConfig {
+        margin-top: 10px;
+    }
 
     /* === BOUTONS === */
     QPushButton {
