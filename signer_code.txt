@@ -1,5 +1,6 @@
 Lorsqu'une nouvelle version doit etre Build :
 
+- Mettre a jour la monté de version et enlever le mode debug dans app_config.py
 - Aller dans le dossier build\windows.
 - Lancer le fichier build_windows.bat
 
