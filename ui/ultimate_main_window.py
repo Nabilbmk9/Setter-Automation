@@ -272,12 +272,13 @@ class UltimateMainWindow(QMainWindow):
             auto_reply_enabled=auto_reply_enabled,
             auto_reply_assistant_id=auto_reply_assistant_id,
             prospecting_assistant_id=prospecting_assistant_id,
-            test_mode_enabled=test_mode_enabled
+            test_mode_enabled=test_mode_enabled,
+            account_email=username
         )
 
         # Optionnel : Vérifier la limite quotidienne
         # Cette logique suppose que data_manager est accessible via controller
-        limit_reached, messages_sent = controller.data_manager.has_reached_message_limit(messages_per_day)
+        limit_reached, messages_sent = controller.data_manager.has_reached_message_limit(messages_per_day, account_email=username)
         if limit_reached and not auto_reply_enabled:
             QMessageBox.warning(
                 self, "Limite atteinte",

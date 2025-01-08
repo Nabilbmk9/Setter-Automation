@@ -51,6 +51,8 @@ class DataManager:
                     FOREIGN KEY(search_id) REFERENCES search_links(id)
                 );
             ''')
+
+            # Créer des indexes si besoin
             self.conn.execute('''
                 CREATE INDEX IF NOT EXISTS idx_contacts_linkedin_profile_link
                 ON contacts (linkedin_profile_link);
@@ -59,6 +61,19 @@ class DataManager:
                 CREATE INDEX IF NOT EXISTS idx_search_links_search_link
                 ON search_links (search_link);
             ''')
+
+            # --- NOUVEAU : vérifier si la colonne account_email existe déjà ---
+            cursor = self.conn.cursor()
+            cursor.execute("PRAGMA table_info(messages)")
+            columns = [col[1] for col in cursor.fetchall()]
+            if 'account_email' not in columns:
+                self.conn.execute('''
+                    ALTER TABLE messages
+                    ADD COLUMN account_email TEXT
+                ''')
+                logger.info("Colonne 'account_email' ajoutée à la table 'messages'.")
+            # -----------------------------------------------------------------
+
         logger.info("Tables créées ou vérifiées avec succès")
 
     def _process_queue(self):
@@ -138,16 +153,24 @@ class DataManager:
         logger.info(f"Dernière page visitée récupérée pour le lien de recherche {search_link}: {last_page}")
         result_queue.put(last_page)
 
-    def add_message(self, message_template, contact_id, search_id, response_received=False):
-        self.execute(self._add_message, message_template, contact_id, search_id, response_received)
+    def add_message(self, message_template, contact_id, search_id, response_received=False, account_email=None):
+        self.execute(self._add_message, message_template, contact_id, search_id, response_received, account_email)
 
-    def _add_message(self, message_template, contact_id, search_id, response_received):
+    def _add_message(self, message_template, contact_id, search_id, response_received, account_email):
         with self.conn:
             self.conn.execute('''
-                INSERT INTO messages (message_template, response_received, date_sent, contact_id, search_id)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (message_template, response_received, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), contact_id, search_id))
-        logger.info(f"Message ajouté pour le contact ID {contact_id} et recherche ID {search_id}")
+                INSERT INTO messages (message_template, response_received, date_sent, contact_id, search_id, account_email)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                message_template,
+                response_received,
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                contact_id,
+                search_id,
+                account_email
+            ))
+        logger.info(
+            f"Message ajouté pour le contact ID {contact_id} et recherche ID {search_id} (compte={account_email})")
 
     def update_message_response(self, message_id, response_received):
         self.execute(self._update_message_response, message_id, response_received)
@@ -191,20 +214,30 @@ class DataManager:
         logger.info(f"ID de la recherche récupéré pour le lien de recherche {search_link}: {search_id}")
         result_queue.put(search_id)
 
-    def count_messages_sent_today(self):
+    def count_messages_sent_today(self, account_email=None):
         result_queue = queue.Queue()
-        self.execute(self._count_messages_sent_today, result_queue)
+        self.execute(self._count_messages_sent_today, result_queue, account_email)
         return result_queue.get()
 
-    def _count_messages_sent_today(self, result_queue):
+    def _count_messages_sent_today(self, result_queue, account_email):
         cursor = self.conn.cursor()
         today = date.today().strftime('%Y-%m-%d')
-        cursor.execute('''
-            SELECT COUNT(*) FROM messages WHERE date(date_sent) = ?
-        ''', (today,))
+
+        if account_email:
+            cursor.execute('''
+                SELECT COUNT(*) FROM messages
+                WHERE date(date_sent) = ? AND account_email = ?
+            ''', (today, account_email))
+        else:
+            cursor.execute('''
+                SELECT COUNT(*) FROM messages
+                WHERE date(date_sent) = ?
+            ''', (today,))
+
         result = cursor.fetchone()
         messages_sent_today = result[0] if result else 0
-        logger.info(f"Nombre de messages envoyés aujourd'hui : {messages_sent_today}")
+
+        logger.info(f"Nombre de messages envoyés aujourd'hui (compte={account_email}): {messages_sent_today}")
         result_queue.put(messages_sent_today)
 
     def check_full_name_exists(self, full_name):
@@ -243,9 +276,10 @@ class DataManager:
         else:
             logger.info(f"Aucune correspondance trouvée pour : {full_name}")
 
-    def has_reached_message_limit(self, messages_per_day):
-        messages_sent = self.count_messages_sent_today()
+    def has_reached_message_limit(self, messages_per_day, account_email=None):
+        # On compte uniquement les messages envoyés via le compte fourni
+        messages_sent = self.count_messages_sent_today(account_email)
         if messages_sent >= messages_per_day:
-            logger.info(f"Daily message limit reached: {messages_sent}/{messages_per_day}")
+            logger.info(f"Daily message limit reached for {account_email}: {messages_sent}/{messages_per_day}")
             return True, messages_sent
         return False, messages_sent

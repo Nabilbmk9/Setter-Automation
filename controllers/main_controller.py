@@ -20,7 +20,7 @@ class MainController:
         self, username, password, search_link, messages_per_day,
         message_a=None, message_b=None, chatgpt_manager=None, message_type='normal', analyze_profiles=False,
         auto_reply_enabled=False, auto_reply_assistant_id=None, prospecting_assistant_id=None,
-        test_mode_enabled=False,  use_ab_testing=False,
+        test_mode_enabled=False,  use_ab_testing=False, account_email=None
     ):
         logging.info("Initializing MainController")
         self.browser_manager = None
@@ -41,6 +41,7 @@ class MainController:
         self.message_toggle = False  # Pour alterner entre les messages
         self.prospecting_assistant_id = prospecting_assistant_id
         self.test_mode_enabled = test_mode_enabled
+        self.account_email = account_email
 
     def prevent_sleep(self):
         """Fonction qui permet au programme de ne pas se met en veille pendant l'execution"""
@@ -103,7 +104,7 @@ class MainController:
         profiles = self.scraper.get_all_profiles_on_page()
         logging.info(f"Profiles found: {len(profiles)}")
 
-        messages_sent = self.data_manager.count_messages_sent_today()
+        messages_sent = self.data_manager.count_messages_sent_today(self.account_email)
         logging.info(f"Messages sent today: {messages_sent}/{self.messages_per_day}")
 
         while messages_sent < self.messages_per_day:
@@ -125,7 +126,7 @@ class MainController:
                     continue
 
                 if messages_sent >= self.messages_per_day:
-                    logging.info(f"Daily message limit reached: {messages_sent}/{self.messages_per_day}")
+                    logging.info(f"{self.account_email} a déjà atteint la limite de {self.messages_per_day} messages.")
                     return
 
                 linkedin_profile_link = profile.get('linkedin_profile_link')
@@ -249,7 +250,13 @@ class MainController:
                     )
                     contact_id = self.data_manager.get_contact_id(linkedin_profile_link)
                     search_id = self.data_manager.get_search_id(self.search_link)
-                    self.data_manager.add_message(generated_message, contact_id, search_id)
+                    self.data_manager.add_message(
+                        generated_message,
+                        contact_id,
+                        search_id,
+                        response_received=False,
+                        account_email=self.account_email
+                    )
 
                     messages_sent += 1
                     logging.info(f"{messages_sent}/{self.messages_per_day} messages sent")
