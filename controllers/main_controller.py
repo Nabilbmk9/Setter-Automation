@@ -130,6 +130,12 @@ class MainController:
 
                 linkedin_profile_link = profile.get('linkedin_profile_link')
                 logging.info(f"Visiting profile: {linkedin_profile_link}")
+
+                contact_id = self.data_manager.get_contact_id(linkedin_profile_link)
+                if contact_id:  # si le contact_id n'est pas None, contact déjà enregistré
+                    logging.info(f"Contact {linkedin_profile_link} déjà dans la base, on passe au suivant.")
+                    continue
+
                 self.scraper.page.goto(linkedin_profile_link)
                 profile_details = self.scraper.scrape_profile_details()
                 if not profile_details:
