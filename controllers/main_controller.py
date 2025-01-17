@@ -269,9 +269,10 @@ class MainController:
                 logging.info(f"Daily message limit reached: {messages_sent}/{self.messages_per_day}")
                 break
 
-            if self.scraper.is_next_button_disabled():
-                logging.info("Last page reached, stopping the bot")
-                break
+        # TODO: Des bugs sont venu a cause de cette partie, car ça vérifie le bouton next depuis une page de profil
+            # if self.scraper.is_next_button_disabled():
+            #     logging.info("Last page reached, stopping the bot")
+            #     break
 
             last_page_visited += 1
             self.data_manager.update_last_page_visited(self.search_link, last_page_visited)
